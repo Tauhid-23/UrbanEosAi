@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "hero-background",
-      "description": "Lush green leaves in a sunlit urban garden",
-      "imageUrl": "https://picsum.photos/seed/hero/1200/800",
-      "imageHint": "urban garden"
+      "description": "A hand scooping rich, dark soil with a small trowel",
+      "imageUrl": "https://picsum.photos/seed/hero/800/600",
+      "imageHint": "gardening soil"
     },
     {
       "id": "testimonial-1",
@@ -26,9 +26,15 @@
     },
     {
       "id": "about-us",
-      "description": "The Verdant Vista team working in a greenhouse",
+      "description": "The Growhaus team working in a greenhouse",
       "imageUrl": "https://picsum.photos/seed/about/800/600",
       "imageHint": "team working"
+    },
+    {
+      "id": "analytics-dashboard",
+      "description": "A dashboard showing plant health analytics",
+      "imageUrl": "https://picsum.photos/seed/analytics/1200/800",
+      "imageHint": "analytics dashboard"
     },
     {
       "id": "blog-post-1",

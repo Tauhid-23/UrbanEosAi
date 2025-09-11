@@ -3,28 +3,30 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Leaf } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Logo } from '../Logo';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
 
 const navLinks = [
+  { href: '/', label: 'Home' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/blog', label: 'Blog' },
-  { href: '/marketplace', label: 'Marketplace' },
-  { href: '/about', label: 'About' },
+  { href: '/marketplace', label: 'Shop' },
+  { href: '/resources', label: 'Resources' },
   { href: '/contact', label: 'Contact' },
 ];
 
 export function Header() {
   const pathname = usePathname();
 
-  const NavLink = ({ href, label }: { href: string; label: string }) => (
+  const NavLink = ({ href, label, isMobile = false }: { href: string; label: string, isMobile?: boolean }) => (
     <Link
       href={href}
       className={cn(
-        'text-sm font-medium transition-colors hover:text-primary',
-        pathname === href ? 'text-primary' : 'text-muted-foreground'
+        'font-medium transition-colors hover:text-primary',
+        pathname === href ? 'text-primary' : 'text-muted-foreground',
+        isMobile ? 'text-lg' : 'text-sm'
       )}
     >
       {label}
@@ -33,8 +35,8 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 hidden md:flex">
+      <div className="container flex h-20 items-center">
+        <div className="mr-8 hidden md:flex">
           <Logo />
         </div>
 
@@ -49,9 +51,9 @@ export function Header() {
               <SheetContent side="left">
                 <div className="p-4">
                   <Logo />
-                  <nav className="mt-8 flex flex-col gap-4">
+                  <nav className="mt-8 flex flex-col gap-6">
                     {navLinks.map((link) => (
-                      <NavLink key={link.href} {...link} />
+                      <NavLink key={link.href} {...link} isMobile />
                     ))}
                   </nav>
                 </div>
@@ -59,20 +61,24 @@ export function Header() {
             </Sheet>
         </div>
         
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <nav className="hidden md:flex items-center space-x-6">
-            {navLinks.map((link) => (
-              <NavLink key={link.href} {...link} />
-            ))}
-          </nav>
-          <div className="flex items-center gap-2">
+        <div className="flex flex-1 items-center justify-center md:justify-start">
+            <div className="md:hidden">
+              <Logo />
+            </div>
+            <nav className="hidden md:flex items-center space-x-6">
+                {navLinks.map((link) => (
+                <NavLink key={link.href} {...link} />
+                ))}
+            </nav>
+        </div>
+
+        <div className="flex items-center gap-3">
             <Button variant="ghost" asChild>
               <Link href="/login">Login</Link>
             </Button>
             <Button asChild>
-              <Link href="/signup">Sign Up</Link>
+              <Link href="/signup">Start for free</Link>
             </Button>
-          </div>
         </div>
       </div>
     </header>
