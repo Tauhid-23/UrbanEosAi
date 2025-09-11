@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { products, categories, features } from '@/lib/data';
@@ -15,12 +18,18 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 
-export const metadata: Metadata = {
-  title: 'Organic Gardening Marketplace | Growhaus',
-  description: 'Find everything you need for your urban garden - from premium seeds to smart tools.',
-};
+// Since this is a client component, we can't export metadata directly.
+// We'll keep it here for reference, but it won't be used by Next.js in this client component.
+// To have metadata, we would need to move this to a parent server component or use a different pattern.
+// export const metadata: Metadata = {
+//   title: 'Organic Gardening Marketplace | Growhaus',
+//   description: 'Find everything you need for your urban garden - from premium seeds to smart tools.',
+// };
 
 export default function MarketplacePage() {
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchTerm, setSearchTerm] = useState('');
+
   const categoryIcons: { [key: string]: React.ReactNode } = {
     Seeds: <Sprout className="h-8 w-8 text-primary" />,
     Tools: <Wrench className="h-8 w-8 text-primary" />,
@@ -33,6 +42,16 @@ export default function MarketplacePage() {
     'Fast Shipping': <Ship className="h-8 w-8 text-primary" />,
     'Expert Curated': <Star className="h-8 w-8 text-primary" />,
   };
+
+  const filteredProducts = products.filter((product) => {
+    const matchesCategory =
+      selectedCategory === 'All' || product.category === selectedCategory;
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
   return (
     <div className="bg-background">
       <div className="container mx-auto px-4 py-16">
@@ -54,18 +73,29 @@ export default function MarketplacePage() {
                 type="search"
                 placeholder="Search products..."
                 className="pl-10 w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <Link href="/checkout">
-              <Button variant="outline">Cart (0) $0.00</Button>
+              <Button variant="outline">Cart (2) $47.90</Button>
             </Link>
           </div>
           <div className="flex flex-wrap gap-2 justify-center mt-6">
-            <Button variant="default">
+            <Button
+              variant={selectedCategory === 'All' ? 'default' : 'outline'}
+              onClick={() => setSelectedCategory('All')}
+            >
               <Leaf className="mr-2 h-4 w-4" /> All
             </Button>
             {categories.map((category) => (
-              <Button variant="outline" key={category.id}>
+              <Button
+                variant={
+                  selectedCategory === category.name ? 'default' : 'outline'
+                }
+                key={category.id}
+                onClick={() => setSelectedCategory(category.name)}
+              >
                 {category.icon === 'Sprout' && (
                   <Sprout className="mr-2 h-4 w-4" />
                 )}
@@ -85,7 +115,7 @@ export default function MarketplacePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
@@ -101,7 +131,8 @@ export default function MarketplacePage() {
             {categories.map((category) => (
               <div
                 key={category.id}
-                className="border rounded-lg p-6 text-center hover:shadow-lg transition-shadow"
+                className="border rounded-lg p-6 text-center hover:shadow-lg transition-shadow cursor-pointer"
+                 onClick={() => setSelectedCategory(category.name)}
               >
                 <div className="flex justify-center mb-4">
                   {categoryIcons[category.name]}
