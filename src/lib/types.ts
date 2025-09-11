@@ -11,6 +11,9 @@ export type Product = {
   price: number;
   description: string;
   imageId: string;
+  category: 'Seeds' | 'Tools' | 'Kits' | 'Soil & Care' | 'Containers';
+  tags?: string[];
+  rating: number;
 };
 
 export type BlogPost = {
@@ -30,4 +33,17 @@ export type Plant = {
   species: string;
   lastWatered: string;
   imageId: string;
+};
+
+export type Category = {
+  id: string;
+  name: 'Seeds' | 'Tools' | 'Kits' | 'Soil & Care' | 'Containers';
+  description: string;
+  icon: 'Seedling' | 'Wrench' | 'Package' | 'Sprout' | 'Container';
+};
+
+export type Feature = {
+  name: string;
+  description: string;
+  icon: string;
 };

@@ -1,22 +1,32 @@
-import type { BlogPost, Product, Testimonial, Plant } from './types';
+import type {
+  BlogPost,
+  Product,
+  Testimonial,
+  Plant,
+  Category,
+  Feature,
+} from './types';
 
 export const testimonials: Testimonial[] = [
   {
     name: 'Alex Johnson',
     title: 'Rooftop Gardener',
-    quote: 'Verdant Vista transformed my barren rooftop into a lush vegetable garden. The AI recommendations were spot on for my location!',
+    quote:
+      'Growhaus transformed my barren rooftop into a lush vegetable garden. The AI recommendations were spot on for my location!',
     imageId: 'testimonial-1',
   },
   {
     name: 'Maria Garcia',
     title: 'Apartment Dweller',
-    quote: 'I never thought I could garden in my small apartment. The blog posts gave me amazing ideas for vertical gardening. I\'m so proud of my herb wall!',
+    quote:
+      "I never thought I could garden in my small apartment. The blog posts gave me amazing ideas for vertical gardening. I'm so proud of my herb wall!",
     imageId: 'testimonial-2',
   },
   {
     name: 'Sam Chen',
     title: 'Beginner Gardener',
-    quote: 'As a total beginner, the health tracker is a lifesaver. It reminds me when to water and I can actually see my plants growing. Highly recommend!',
+    quote:
+      'As a total beginner, the health tracker is a lifesaver. It reminds me when to water and I can actually see my plants growing. Highly recommend!',
     imageId: 'testimonial-3',
   },
 ];
@@ -24,31 +34,44 @@ export const testimonials: Testimonial[] = [
 export const products: Product[] = [
   {
     id: 'prod-1',
-    name: 'Beginner\'s Herb Kit',
-    price: 29.99,
-    description: 'Everything you need to start your own indoor herb garden. Includes 3 pots, soil, and a variety of seeds.',
-    imageId: 'product-kit',
+    name: 'Organic Tomato Seeds Variety Pack',
+    price: 12.95,
+    description: 'Premium heirloom tomato seeds perfect for container gardening.',
+    imageId: 'product-seeds',
+    category: 'Seeds',
+    tags: ['Organic'],
+    rating: 4.8,
   },
   {
     id: 'prod-2',
-    name: 'Ergonomic Tool Set',
-    price: 45.5,
-    description: 'A durable and comfortable set of essential gardening tools, perfect for container gardening.',
+    name: 'Smart Plant Moisture Sensor',
+    price: 29.95,
+    description:
+      'WiFi-enabled soil moisture sensor that sends alerts to your phone when your plants need water.',
     imageId: 'product-tools',
+    category: 'Tools',
+    rating: 4.5,
   },
   {
     id: 'prod-3',
-    name: 'Organic Potting Mix',
-    price: 15.0,
-    description: 'A 10L bag of nutrient-rich, organic potting soil ideal for a wide range of plants.',
-    imageId: 'product-soil',
+    name: 'Organic Herb Garden Kit',
+    price: 34.95,
+    description:
+      'Complete starter kit with basil, cilantro, parsley, and chives. Includes everything you need.',
+    imageId: 'product-kit',
+    category: 'Kits',
+    tags: ['Organic'],
+    rating: 4.8,
   },
   {
     id: 'prod-4',
-    name: 'Heirloom Vegetable Seeds',
-    price: 12.99,
-    description: 'A collection of 5 heirloom vegetable seed packets, including tomatoes, lettuce, and carrots.',
-    imageId: 'product-seeds',
+    name: 'Organic Potting Mix',
+    price: 15.0,
+    description:
+      'A 10L bag of nutrient-rich, organic potting soil ideal for a wide range of plants.',
+    imageId: 'product-soil',
+    category: 'Soil & Care',
+    rating: 4.7,
   },
 ];
 
@@ -56,7 +79,8 @@ export const blogPosts: BlogPost[] = [
   {
     slug: '5-tips-for-balcony-gardening',
     title: '5 Tips for Successful Balcony Gardening',
-    excerpt: 'Turn your balcony into a green oasis with these five essential tips for container gardening in small spaces.',
+    excerpt:
+      'Turn your balcony into a green oasis with these five essential tips for container gardening in small spaces.',
     content: `
 <p>Having a balcony is a gateway to the world of gardening, even in the heart of a bustling city. Here are five tips to ensure your balcony garden thrives:</p>
 <ol>
@@ -75,8 +99,9 @@ export const blogPosts: BlogPost[] = [
   },
   {
     slug: 'understanding-potting-soils',
-    title: 'Potting Soils 101: What\'s the Difference?',
-    excerpt: 'Not all soils are created equal. Learn the difference between potting mix, garden soil, and topsoil to give your plants the best start.',
+    title: "Potting Soils 101: What's the Difference?",
+    excerpt:
+      'Not all soils are created equal. Learn the difference between potting mix, garden soil, and topsoil to give your plants the best start.',
     content: `
 <p>Walking into a garden center can be overwhelming with all the different bags of "dirt." Here's a quick guide:</p>
 <ul>
@@ -94,7 +119,8 @@ export const blogPosts: BlogPost[] = [
   {
     slug: 'the-magic-of-composting-in-the-city',
     title: 'The Magic of Composting in the City',
-    excerpt: 'Reduce waste and create "black gold" for your plants. Urban composting is easier than you think!',
+    excerpt:
+      'Reduce waste and create "black gold" for your plants. Urban composting is easier than you think!',
     content: `
 <p>Composting isn't just for those with large backyards. City dwellers have several options to turn kitchen scraps into nutrient-rich compost:</p>
 <dl>
@@ -115,25 +141,66 @@ export const blogPosts: BlogPost[] = [
 ];
 
 export const userPlants: Plant[] = [
-    {
-        id: 'plant-1',
-        name: 'Sunny',
-        species: 'Sansevieria trifasciata',
-        lastWatered: '5 days ago',
-        imageId: 'user-plant-1',
-    },
-    {
-        id: 'plant-2',
-        name: 'Figaro',
-        species: 'Ficus lyrata',
-        lastWatered: '2 days ago',
-        imageId: 'user-plant-2',
-    },
-    {
-        id: 'plant-3',
-        name: 'The Gang',
-        species: 'Mixed Succulents',
-        lastWatered: '12 days ago',
-        imageId: 'user-plant-3',
-    }
-]
+  {
+    id: 'plant-1',
+    name: 'Sunny',
+    species: 'Sansevieria trifasciata',
+    lastWatered: '5 days ago',
+    imageId: 'user-plant-1',
+  },
+  {
+    id: 'plant-2',
+    name: 'Figaro',
+    species: 'Ficus lyrata',
+    lastWatered: '2 days ago',
+    imageId: 'user-plant-2',
+  },
+  {
+    id: 'plant-3',
+    name: 'The Gang',
+    species: 'Mixed Succulents',
+    lastWatered: '12 days ago',
+    imageId: 'user-plant-3',
+  },
+];
+
+export const categories: Category[] = [
+  {
+    id: 'cat-1',
+    name: 'Seeds',
+    description: 'Heirloom & organic varieties',
+    icon: 'Seedling',
+  },
+  {
+    id: 'cat-2',
+    name: 'Tools',
+    description: 'Modern gardening equipment',
+    icon: 'Wrench',
+  },
+  { id: 'cat-3', name: 'Kits', description: 'Complete growing solutions', icon: 'Package' },
+  { id: 'cat-4', name: 'Soil & Care', description: 'Nutrients & fertilizers', icon: 'Sprout' },
+  {
+    id: 'cat-5',
+    name: 'Containers',
+    description: 'Pots and planters',
+    icon: 'Container',
+  },
+];
+
+export const features: Feature[] = [
+  {
+    name: '100% Organic',
+    description: 'Certified organic products for healthy growing',
+    icon: 'Leaf',
+  },
+  {
+    name: 'Fast Shipping',
+    description: 'Free shipping on orders over $50',
+    icon: 'Ship',
+  },
+  {
+    name: 'Expert Curated',
+    description: 'Selected by urban gardening professionals',
+    icon: 'Star',
+  },
+];

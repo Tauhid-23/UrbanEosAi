@@ -44,7 +44,7 @@ export default function SignupPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full">Create Account</Button>
+          <Button className="w-full">Get Started</Button>
            <p className="text-xs text-center text-muted-foreground">
             By signing up, you agree to our{' '}
             <Link href="/terms" className="underline hover:text-primary">
@@ -54,7 +54,7 @@ export default function SignupPage() {
           <p className="text-xs text-center text-muted-foreground">
             Already have an account?{' '}
             <Link href="/login" className="underline hover:text-primary">
-              Login
+              Sign In
             </Link>
           </p>
         </CardFooter>

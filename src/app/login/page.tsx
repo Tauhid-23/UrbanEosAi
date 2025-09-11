@@ -40,7 +40,7 @@ export default function LoginPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full">Login</Button>
+          <Button className="w-full">Sign In</Button>
           <p className="text-xs text-center text-muted-foreground">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="underline hover:text-primary">

@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu } from 'lucide-react';
+import { Menu, ShoppingCart } from 'lucide-react';
 import { Logo } from '../Logo';
 import { cn } from '@/lib/utils';
 import { usePathname } from 'next/navigation';
@@ -12,7 +12,7 @@ const navLinks = [
   { href: '/', label: 'Home' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/blog', label: 'Blog' },
-  { href: '/marketplace', label: 'Shop' },
+  { href: '/marketplace', label: 'Marketplace' },
   { href: '/resources', label: 'Resources' },
   { href: '/contact', label: 'Contact' },
 ];
@@ -73,11 +73,17 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/checkout">
+              <ShoppingCart />
+              <span className="sr-only">Cart</span>
+            </Link>
+          </Button>
             <Button variant="ghost" asChild>
-              <Link href="/login">Login</Link>
+              <Link href="/login">Sign In</Link>
             </Button>
             <Button asChild>
-              <Link href="/signup">Start for free</Link>
+              <Link href="/signup">Get Started</Link>
             </Button>
         </div>
       </div>
