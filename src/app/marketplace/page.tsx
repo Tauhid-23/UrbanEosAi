@@ -6,7 +6,6 @@ import {
   Container,
   Package,
   Search,
-  Seedling,
   Sprout,
   Wrench,
   Leaf,
@@ -22,14 +21,14 @@ export const metadata: Metadata = {
 };
 
 export default function MarketplacePage() {
-  const categoryIcons = {
-    Seeds: <Seedling className="h-8 w-8 text-primary" />,
+  const categoryIcons: { [key: string]: React.ReactNode } = {
+    Seeds: <Sprout className="h-8 w-8 text-primary" />,
     Tools: <Wrench className="h-8 w-8 text-primary" />,
     Kits: <Package className="h-8 w-8 text-primary" />,
     'Soil & Care': <Sprout className="h-8 w-8 text-primary" />,
     Containers: <Container className="h-8 w-8 text-primary" />,
   };
-  const featureIcons = {
+  const featureIcons: { [key: string]: React.ReactNode } = {
     '100% Organic': <Leaf className="h-8 w-8 text-primary" />,
     'Fast Shipping': <Ship className="h-8 w-8 text-primary" />,
     'Expert Curated': <Star className="h-8 w-8 text-primary" />,
@@ -67,17 +66,14 @@ export default function MarketplacePage() {
             </Button>
             {categories.map((category) => (
               <Button variant="outline" key={category.id}>
-                {category.icon === 'Seedling' && (
-                  <Seedling className="mr-2 h-4 w-4" />
+                {category.icon === 'Sprout' && (
+                  <Sprout className="mr-2 h-4 w-4" />
                 )}
                 {category.icon === 'Wrench' && (
                   <Wrench className="mr-2 h-4 w-4" />
                 )}
                 {category.icon === 'Package' && (
                   <Package className="mr-2 h-4 w-4" />
-                )}
-                {category.icon === 'Sprout' && (
-                  <Sprout className="mr-2 h-4 w-4" />
                 )}
                 {category.icon === 'Container' && (
                   <Container className="mr-2 h-4 w-4" />

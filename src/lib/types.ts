@@ -39,7 +39,7 @@ export type Category = {
   id: string;
   name: 'Seeds' | 'Tools' | 'Kits' | 'Soil & Care' | 'Containers';
   description: string;
-  icon: 'Seedling' | 'Wrench' | 'Package' | 'Sprout' | 'Container';
+  icon: 'Sprout' | 'Wrench' | 'Package' | 'Container';
 };
 
 export type Feature = {

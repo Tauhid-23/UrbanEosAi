@@ -169,7 +169,7 @@ export const categories: Category[] = [
     id: 'cat-1',
     name: 'Seeds',
     description: 'Heirloom & organic varieties',
-    icon: 'Seedling',
+    icon: 'Sprout',
   },
   {
     id: 'cat-2',
