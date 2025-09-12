@@ -197,7 +197,8 @@ function DashboardPage() {
   const [isScanMode, setScanMode] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [activeAccordionItem, setActiveAccordionItem] = useState<string | null>(null);
+  const [activeAccordionItem, setActiveAccordionItem] = useState<string | string[] | null>(null);
+
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -375,7 +376,7 @@ function DashboardPage() {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <Accordion type="single" collapsible className="w-full" onValueChange={setActiveAccordionItem}>
+                  <Accordion type="multiple" className="w-full" onValueChange={setActiveAccordionItem} value={activeAccordionItem as string[]}>
                     {plantGrowth.map((plant) => (
                       <AccordionItem value={plant.id} key={plant.id}>
                         <AccordionTrigger className="hover:no-underline">
@@ -636,3 +637,5 @@ function DashboardPage() {
 }
 
 export default withAuth(DashboardPage);
+
+    
