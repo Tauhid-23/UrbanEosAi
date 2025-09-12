@@ -52,14 +52,6 @@ export async function generateMetadata(
   };
 }
 
-export async function generateStaticParams() {
-    const postsCollection = collection(db, 'blogPosts');
-    const querySnapshot = await getDocs(postsCollection);
-    return querySnapshot.docs.map((doc) => ({
-      slug: doc.data().slug,
-    }));
-}
-
 export default async function BlogPostPage({ params }: Props) {
   const post = await getPost(params.slug);
 
