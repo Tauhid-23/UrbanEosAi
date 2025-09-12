@@ -43,9 +43,6 @@ const summarizeBlogPostFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return {
-      ...output,
-      progress: 'Generated a short summary of the blog post content.',
-    } as SummarizeBlogPostOutput & {progress: string};
+    return output!;
   }
 );
