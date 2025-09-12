@@ -20,13 +20,13 @@ export const metadata: Metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="flex items-center justify-center min-h-screen-minus-header bg-secondary/50 py-12 px-4">
+    <div className="flex items-center justify-center min-h-screen-minus-header bg-secondary/30 py-12 px-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
             <div className='flex justify-center mb-4'>
                 <Logo />
             </div>
-          <CardTitle className="font-headline">Welcome Back</CardTitle>
+          <CardTitle className="font-headline text-2xl">Welcome Back</CardTitle>
           <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -40,7 +40,9 @@ export default function LoginPage() {
           </div>
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
-          <Button className="w-full">Sign In</Button>
+          <Button className="w-full asChild">
+            <Link href="/dashboard">Sign In</Link>
+          </Button>
           <p className="text-xs text-center text-muted-foreground">
             Don&apos;t have an account?{' '}
             <Link href="/signup" className="underline hover:text-primary">
