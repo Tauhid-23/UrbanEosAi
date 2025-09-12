@@ -309,7 +309,7 @@ export default function DashboardPage() {
     if (videoRef.current) {
         const canvas = document.createElement('canvas');
         canvas.width = videoRef.current.videoWidth;
-        canvas.height = video_current.videoHeight;
+        canvas.height = videoRef.current.videoHeight;
         const context = canvas.getContext('2d');
         if (context) {
             context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
