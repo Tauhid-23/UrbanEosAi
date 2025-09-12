@@ -1,19 +1,44 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { blogPosts } from '@/lib/data';
+import { db } from '@/lib/firebase';
+import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
 import type { Metadata, ResolvingMetadata } from 'next';
+import type { BlogPost } from '@/lib/types';
+import { format } from 'date-fns';
 
 type Props = {
   params: { slug: string };
 };
 
+async function getPost(slug: string): Promise<BlogPost | null> {
+    try {
+        const postsCollection = collection(db, 'blogPosts');
+        const q = query(postsCollection, where('slug', '==', slug));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            return null;
+        }
+
+        const docData = querySnapshot.docs[0].data();
+        return {
+            ...docData,
+            date: (docData.date as Timestamp).toDate().toISOString(),
+        } as BlogPost;
+
+    } catch (error) {
+        console.error("Error fetching post: ", error);
+        return null;
+    }
+}
+
 export async function generateMetadata(
   { params }: Props,
   parent: ResolvingMetadata
 ): Promise<Metadata> {
-  const post = blogPosts.find((p) => p.slug === params.slug);
+  const post = await getPost(params.slug);
 
   if (!post) {
     return {
@@ -28,19 +53,22 @@ export async function generateMetadata(
 }
 
 export async function generateStaticParams() {
-    return blogPosts.map((post) => ({
-      slug: post.slug,
+    const postsCollection = collection(db, 'blogPosts');
+    const querySnapshot = await getDocs(postsCollection);
+    return querySnapshot.docs.map((doc) => ({
+      slug: doc.data().slug,
     }));
 }
 
-export default function BlogPostPage({ params }: Props) {
-  const post = blogPosts.find((p) => p.slug === params.slug);
+export default async function BlogPostPage({ params }: Props) {
+  const post = await getPost(params.slug);
 
   if (!post) {
     notFound();
   }
 
   const image = PlaceHolderImages.find((p) => p.id === post.imageId);
+  const postDate = format(new Date(post.date), 'PPP');
 
   return (
     <article className="container mx-auto px-4 py-16">
@@ -51,7 +79,7 @@ export default function BlogPostPage({ params }: Props) {
             {post.title}
           </h1>
           <p className="text-muted-foreground text-sm">
-            By {post.author} on {post.date}
+            By {post.author} on {postDate}
           </p>
         </header>
 

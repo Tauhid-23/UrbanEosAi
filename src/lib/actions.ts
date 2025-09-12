@@ -6,8 +6,11 @@ import {
   SuggestSuitablePlantsOutput,
 } from '@/ai/flows/suggest-suitable-plants';
 import { z } from 'zod';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { revalidatePath } from 'next/cache';
 
-const FormSchema = z.object({
+const PlantFormSchema = z.object({
   location: z
     .string()
     .min(2, { message: 'Location must be at least 2 characters.' }),
@@ -19,7 +22,7 @@ const FormSchema = z.object({
   }),
 });
 
-export type State = {
+export type PlantRecommendationState = {
   errors?: {
     location?: string[];
     space?: string[];
@@ -30,10 +33,10 @@ export type State = {
 };
 
 export async function getPlantRecommendations(
-  prevState: State,
+  prevState: PlantRecommendationState,
   formData: FormData
-): Promise<State> {
-  const validatedFields = FormSchema.safeParse({
+): Promise<PlantRecommendationState> {
+  const validatedFields = PlantFormSchema.safeParse({
     location: formData.get('location'),
     space: formData.get('space'),
     experienceLevel: formData.get('experienceLevel'),
@@ -57,6 +60,78 @@ export async function getPlantRecommendations(
       message: 'An error occurred with the AI service. Please try again later.',
       data: null,
       errors: {},
+    };
+  }
+}
+
+const slugify = (text: string) =>
+  text
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-');
+
+// Admin Actions
+const BlogPostFormSchema = z.object({
+  title: z.string().min(5, 'Title must be at least 5 characters.'),
+  excerpt: z.string().min(10, 'Excerpt must be at least 10 characters.'),
+  content: z.string().min(50, 'Content must be at least 50 characters.'),
+  category: z.string().min(2, 'Category must be at least 2 characters.'),
+  author: z.string().min(2, 'Author must be at least 2 characters.'),
+  imageId: z.string().min(1, 'Image ID is required.'),
+});
+
+export type BlogPostState = {
+  errors?: {
+    title?: string[];
+    excerpt?: string[];
+    content?: string[];
+    category?: string[];
+    author?: string[];
+    imageId?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createBlogPost(
+  prevState: BlogPostState,
+  formData: FormData
+) {
+  const validatedFields = BlogPostFormSchema.safeParse({
+    title: formData.get('title'),
+    excerpt: formData.get('excerpt'),
+    content: formData.get('content'),
+    category: formData.get('category'),
+    author: formData.get('author'),
+    imageId: formData.get('imageId'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Invalid fields. Failed to create blog post.',
+    };
+  }
+
+  try {
+    const blogRef = collection(db, 'blogPosts');
+    await addDoc(blogRef, {
+      ...validatedFields.data,
+      slug: slugify(validatedFields.data.title),
+      date: serverTimestamp(),
+    });
+
+    revalidatePath('/blog');
+    revalidatePath('/admin');
+    return { message: 'Blog post created successfully!' };
+  } catch (e) {
+    console.error(e);
+    return {
+      message: 'Database Error: Failed to create blog post.',
     };
   }
 }

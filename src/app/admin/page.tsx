@@ -1,0 +1,187 @@
+
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import withAuth from '@/components/withAuth';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  serverTimestamp,
+  runTransaction,
+} from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
+import { blogPosts, products } from '@/lib/data';
+import CreateBlogPostForm from './components/CreateBlogPostForm';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+function AdminPage() {
+  const { user } = useAuth();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isSeeding, setIsSeeding] = useState(false);
+
+  useEffect(() => {
+    // This check happens after withAuth has already confirmed a user exists.
+    // We add this for role-based security on the client-side.
+    if (user && !user.isAdmin) {
+      toast({
+        variant: 'destructive',
+        title: 'Access Denied',
+        description: 'You do not have permission to view this page.',
+      });
+      router.push('/dashboard');
+    }
+  }, [user, router, toast]);
+
+  const seedDatabase = async () => {
+    setIsSeeding(true);
+    toast({
+      title: 'Seeding Database...',
+      description: 'This may take a moment.',
+    });
+
+    try {
+      // Use a transaction to ensure atomicity
+      await runTransaction(db, async (transaction) => {
+        // Seed Blog Posts
+        const blogPostsCollection = collection(db, 'blogPosts');
+        const blogSnapshot = await getDocs(blogPostsCollection);
+        if (blogSnapshot.empty) {
+          for (const post of blogPosts) {
+            const newDocRef = doc(blogPostsCollection);
+            transaction.set(newDocRef, {
+              ...post,
+              slug: post.title.toLowerCase().replace(/\s+/g, '-'),
+              date: serverTimestamp(),
+            });
+          }
+        }
+
+        // Seed Products
+        const productsCollection = collection(db, 'products');
+        const productsSnapshot = await getDocs(productsCollection);
+        if (productsSnapshot.empty) {
+          for (const product of products) {
+            const newDocRef = doc(productsCollection);
+            transaction.set(newDocRef, product);
+          }
+        }
+      });
+
+      toast({
+        title: 'Database Seeded!',
+        description:
+          'Initial blog posts and products have been added to Firestore.',
+      });
+    } catch (error) {
+      console.error('Error seeding database:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Seeding Failed',
+        description: 'Could not seed the database. Check console for errors.',
+      });
+    } finally {
+      setIsSeeding(false);
+    }
+  };
+
+  // Render a loading state or null if the user is not an admin
+  if (!user || !user.isAdmin) {
+    return (
+      <div className="container mx-auto flex h-full items-center justify-center p-4">
+        <p>Verifying permissions...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-4 md:p-8">
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <p className="text-muted-foreground">
+          Manage your application's content here.
+        </p>
+      </header>
+
+      <Tabs defaultValue="content">
+        <TabsList className="mb-4">
+          <TabsTrigger value="content">Content Management</TabsTrigger>
+          <TabsTrigger value="database">Database</TabsTrigger>
+        </TabsList>
+        <TabsContent value="content">
+          <div className="grid gap-8 md:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Create New Blog Post</CardTitle>
+                <CardDescription>
+                  Fill out the form to add a new article to your blog.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CreateBlogPostForm />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Create New Product</CardTitle>
+                <CardDescription>
+                  Add a new item to your marketplace.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Product creation form will be here.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        <TabsContent value="database">
+          <Card>
+            <CardHeader>
+              <CardTitle>Database Management</CardTitle>
+              <CardDescription>
+                Perform database actions like seeding initial data.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <Button onClick={seedDatabase} disabled={isSeeding}>
+                  {isSeeding ? 'Seeding...' : 'Seed Initial Data'}
+                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Populate Firestore with initial blog posts and products. This
+                  only runs if the collections are empty.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+export default withAuth(AdminPage);

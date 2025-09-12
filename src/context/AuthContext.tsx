@@ -3,12 +3,17 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { updateProfile } from 'firebase/auth';
 
+// Define an extended User type to include our custom fields
+export interface AppUser extends User {
+  isAdmin?: boolean;
+}
+
 interface AuthContextType {
-  user: User | null;
+  user: AppUser | null;
   loading: boolean;
   signUp: (email: string, password: string, displayName: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
@@ -24,7 +29,7 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,9 +38,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-          setUser({ ...user, ...userDoc.data() } as User);
+          // Combine Firebase user object with our custom data
+          setUser({
+            ...user,
+            ...userDoc.data(),
+          } as AppUser);
         } else {
-          setUser(user);
+          setUser(user as AppUser);
         }
       } else {
         setUser(null);
@@ -53,16 +62,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await updateProfile(user, { displayName });
 
     const userDocRef = doc(db, 'users', user.uid);
+    // Add new user data to Firestore
     await setDoc(userDocRef, {
       uid: user.uid,
       email: user.email,
       displayName: displayName,
+      createdAt: serverTimestamp(),
+      isAdmin: false, // Default to not being an admin
     });
     
     // To update the user state immediately after sign-up
     const userDoc = await getDoc(userDocRef);
     if(userDoc.exists()) {
-        setUser({ ...user, ...userDoc.data() } as User);
+        setUser({ ...user, ...userDoc.data() } as AppUser);
     }
 
     return userCredential;

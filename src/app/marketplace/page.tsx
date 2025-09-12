@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { products, categories, features } from '@/lib/data';
+import { categories, features, products as fallbackProducts } from '@/lib/data';
 import ProductCard from './components/ProductCard';
 import {
   Container,
@@ -14,21 +16,47 @@ import {
   Leaf,
   Star,
   Ship,
+  Loader2,
 } from 'lucide-react';
-import type { Metadata } from 'next';
+import type { Product } from '@/lib/types';
 import Link from 'next/link';
 
-// Since this is a client component, we can't export metadata directly.
-// We'll keep it here for reference, but it won't be used by Next.js in this client component.
-// To have metadata, we would need to move this to a parent server component or use a different pattern.
-// export const metadata: Metadata = {
-//   title: 'Organic Gardening Marketplace | UrbanEos AI',
-//   description: 'Find everything you need for your urban garden - from premium seeds to smart tools.',
-// };
+async function getProducts(): Promise<Product[]> {
+    try {
+        const productsCollection = collection(db, 'products');
+        const querySnapshot = await getDocs(productsCollection);
+
+        if (querySnapshot.empty) {
+            return fallbackProducts.map((p, i) => ({ ...p, id: `prod-${i + 1}` }));
+        }
+
+        return querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        } as Product));
+
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        return fallbackProducts.map((p, i) => ({ ...p, id: `prod-${i + 1}` }));
+    }
+}
+
 
 export default function MarketplacePage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+        setLoading(true);
+        const fetchedProducts = await getProducts();
+        setProducts(fetchedProducts);
+        setLoading(false);
+    }
+    fetchProducts();
+  }, []);
 
   const categoryIcons: { [key: string]: React.ReactNode } = {
     Seeds: <Sprout className="h-8 w-8 text-primary" />,
@@ -93,7 +121,7 @@ export default function MarketplacePage() {
                 variant={
                   selectedCategory === category.name ? 'default' : 'outline'
                 }
-                key={category.id}
+                key={category.name}
                 onClick={() => setSelectedCategory(category.name)}
               >
                 {category.icon === 'Sprout' && (
@@ -113,12 +141,18 @@ export default function MarketplacePage() {
             ))}
           </div>
         </div>
+        {loading ? (
+            <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProducts.map((product) => (
+                <ProductCard key={product.id} product={product} />
+            ))}
+            </div>
+        )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
 
         <div className="mt-24">
           <div className="text-center mb-12">
@@ -130,7 +164,7 @@ export default function MarketplacePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {categories.map((category) => (
               <div
-                key={category.id}
+                key={category.name}
                 className="border rounded-lg p-6 text-center hover:shadow-lg transition-shadow cursor-pointer"
                  onClick={() => setSelectedCategory(category.name)}
               >

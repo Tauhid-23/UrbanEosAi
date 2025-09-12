@@ -9,7 +9,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Menu, ShoppingCart, LogOut } from 'lucide-react';
+import { Menu, ShoppingCart, LogOut, Shield } from 'lucide-react';
 import { Logo } from '../Logo';
 import { cn } from '@/lib/utils';
 import { usePathname, useRouter } from 'next/navigation';
@@ -23,6 +23,7 @@ const navLinks = [
   { href: '/marketplace', label: 'Marketplace' },
   { href: '/resources', label: 'Resources' },
   { href: '/contact', label: 'Contact' },
+  { href: '/admin', label: 'Admin', auth: true, admin: true },
 ];
 
 export function Header() {
@@ -69,7 +70,11 @@ export function Header() {
     </Link>
   );
 
-  const filteredNavLinks = navLinks.filter(link => !link.auth || (link.auth && user));
+  const filteredNavLinks = navLinks.filter(link => {
+    if (link.admin) return user?.isAdmin;
+    if (link.auth) return !!user;
+    return true;
+  });
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -123,6 +128,14 @@ export function Header() {
           </Button>
           {user ? (
             <>
+              {user.isAdmin && (
+                <Button variant="ghost" size="icon" asChild>
+                    <Link href="/admin">
+                        <Shield />
+                        <span className="sr-only">Admin</span>
+                    </Link>
+                </Button>
+              )}
               <Button variant="ghost" onClick={handleSignOut}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign Out

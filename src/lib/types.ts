@@ -1,3 +1,5 @@
+import type { Timestamp } from 'firebase/firestore';
+
 export type Testimonial = {
   name: string;
   title: string;
@@ -22,7 +24,7 @@ export type BlogPost = {
   excerpt: string;
   content: string;
   author: string;
-  date: string;
+  date: Timestamp | string; // Firestore timestamp or string
   imageId: string;
   category: string;
 };

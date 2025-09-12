@@ -12,9 +12,12 @@ import {
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { BlogPost } from '@/lib/types';
 import { ArrowRight } from 'lucide-react';
+import { format } from 'date-fns';
 
 export default function BlogPostCard({ post }: { post: BlogPost }) {
   const image = PlaceHolderImages.find((p) => p.id === post.imageId);
+  const postDate = post.date ? format(new Date(post.date), 'PPP') : 'Date not available';
+
 
   return (
     <Link href={`/blog/${post.slug}`} className="group">
@@ -37,7 +40,10 @@ export default function BlogPostCard({ post }: { post: BlogPost }) {
         </CardHeader>
         <CardContent className="flex-grow" />
         <CardFooter className="flex justify-between items-center text-sm text-muted-foreground">
-          <span>By {post.author}</span>
+            <div>
+                <p>{post.author}</p>
+                <p>{postDate}</p>
+            </div>
           <span className="flex items-center group-hover:text-primary transition-colors">
             Read More <ArrowRight className="ml-1 h-4 w-4" />
           </span>
