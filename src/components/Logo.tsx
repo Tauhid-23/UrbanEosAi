@@ -9,7 +9,7 @@ export function Logo({ className }: { className?: string }) {
         <path d="M13.3333 28H18.6667V21.3333L13.3333 16V28Z" fill="hsl(var(--primary))"/>
         </svg>
       <span className="text-2xl font-bold tracking-tight">
-        Growhaus
+        UrbanEos AI
       </span>
     </Link>
   );

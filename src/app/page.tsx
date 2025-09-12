@@ -195,7 +195,7 @@ export default function Home() {
                 Loved by <span className="text-primary">12,000+ urban gardeners</span>
               </h2>
               <p className="mt-4 max-w-2xl mx-auto text-muted-foreground">
-                See how Growhaus is helping others with a green thumb.
+                See how UrbanEos AI is helping others with a green thumb.
               </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -328,7 +328,7 @@ export default function Home() {
                     </Card>
                      <Card className="p-6">
                         <h3 className="font-bold text-lg mb-2">Send us a message</h3>
-                        <p className="text-muted-foreground mb-4">We are here to answer any questions you may have about Growhaus.</p>
+                        <p className="text-muted-foreground mb-4">We are here to answer any questions you may have about UrbanEos AI.</p>
                         <Button className="w-full font-bold text-lg h-12" asChild>
                           <Link href="/contact">Send a Message</Link>
                         </Button>

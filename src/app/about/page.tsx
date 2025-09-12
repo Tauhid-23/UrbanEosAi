@@ -3,8 +3,8 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'About Us | Verdant Vista',
-    description: 'Learn about the mission and team behind Verdant Vista.',
+    title: 'About Us | UrbanEos AI',
+    description: 'Learn about the mission and team behind UrbanEos AI.',
 };
 
 export default function AboutPage() {
@@ -17,7 +17,7 @@ export default function AboutPage() {
           Our Mission: Greening the Concrete Jungle
         </h1>
         <p className="text-lg text-muted-foreground text-center mb-12">
-          At Verdant Vista, we believe that everyone deserves a touch of nature, no matter how small their space. Our mission is to empower urban dwellers to cultivate their own green oases, fostering a deeper connection with the food they eat and the world around them.
+          At UrbanEos AI, we believe that everyone deserves a touch of nature, no matter how small their space. Our mission is to empower urban dwellers to cultivate their own green oases, fostering a deeper connection with the food they eat and the world around them.
         </p>
 
         {aboutImage && (
@@ -36,7 +36,7 @@ export default function AboutPage() {
           <div>
             <h2 className="text-3xl font-bold font-headline mb-4">Who We Are</h2>
             <p className="text-muted-foreground leading-relaxed">
-              We are a passionate team of gardeners, technologists, and environmental enthusiasts who saw the potential for technology to simplify and enrich the practice of urban gardening. Frustrated by the lack of accessible, tailored advice for city life, we set out to create Verdant Vista.
+              We are a passionate team of gardeners, technologists, and environmental enthusiasts who saw the potential for technology to simplify and enrich the practice of urban gardening. Frustrated by the lack of accessible, tailored advice for city life, we set out to create UrbanEos AI.
             </p>
           </div>
           <div>

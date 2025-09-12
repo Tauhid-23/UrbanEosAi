@@ -3,8 +3,8 @@ import { Mail, Phone, MapPin } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Contact Us | Verdant Vista',
-    description: 'Get in touch with the Verdant Vista team.',
+    title: 'Contact Us | UrbanEos AI',
+    description: 'Get in touch with the UrbanEos AI team.',
 };
 
 
@@ -34,7 +34,7 @@ export default function ContactPage() {
                     <div>
                         <h3 className="text-lg font-semibold">Email</h3>
                         <p className="text-muted-foreground">General Inquiries</p>
-                        <a href="mailto:hello@verdantvista.com" className="text-primary hover:underline">hello@verdantvista.com</a>
+                        <a href="mailto:hello@urbaneos.ai" className="text-primary hover:underline">hello@urbaneos.ai</a>
                     </div>
                 </div>
                 <div className="flex items-start gap-4">

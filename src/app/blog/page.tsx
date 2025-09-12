@@ -3,7 +3,7 @@ import BlogPostCard from './components/BlogPostCard';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Blog | Verdant Vista',
+    title: 'Blog | UrbanEos AI',
     description: 'Explore articles on urban gardening, plant care, and sustainability.',
 };
 
@@ -12,7 +12,7 @@ export default function BlogPage() {
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-12">
         <h1 className="text-4xl md:text-5xl font-bold font-headline">
-          The Verdant Vista Blog
+          The UrbanEos AI Blog
         </h1>
         <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
           Your source for urban gardening tips, plant care advice, and sustainable living.

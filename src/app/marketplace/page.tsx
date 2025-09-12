@@ -22,7 +22,7 @@ import Link from 'next/link';
 // We'll keep it here for reference, but it won't be used by Next.js in this client component.
 // To have metadata, we would need to move this to a parent server component or use a different pattern.
 // export const metadata: Metadata = {
-//   title: 'Organic Gardening Marketplace | Growhaus',
+//   title: 'Organic Gardening Marketplace | UrbanEos AI',
 //   description: 'Find everything you need for your urban garden - from premium seeds to smart tools.',
 // };
 

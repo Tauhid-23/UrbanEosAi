@@ -6,7 +6,7 @@ import { ArrowUpRight } from 'lucide-react';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Gardening Resources | Verdant Vista',
+    title: 'Gardening Resources | UrbanEos AI',
     description: 'A curated list of helpful gardening resources, guides, and communities.',
 };
 

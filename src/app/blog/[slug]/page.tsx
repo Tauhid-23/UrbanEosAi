@@ -22,7 +22,7 @@ export async function generateMetadata(
   }
 
   return {
-    title: `${post.title} | Verdant Vista`,
+    title: `${post.title} | UrbanEos AI`,
     description: post.excerpt,
   };
 }

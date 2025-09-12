@@ -12,7 +12,7 @@ export const testimonials: Testimonial[] = [
     name: 'Alex Johnson',
     title: 'Rooftop Gardener',
     quote:
-      'Growhaus transformed my barren rooftop into a lush vegetable garden. The AI recommendations were spot on for my location!',
+      'UrbanEos AI transformed my barren rooftop into a lush vegetable garden. The AI recommendations were spot on for my location!',
     imageId: 'testimonial-1',
   },
   {

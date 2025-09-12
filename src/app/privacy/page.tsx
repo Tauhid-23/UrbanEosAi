@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Privacy Policy | Verdant Vista',
-    description: 'Read the privacy policy for Verdant Vista.',
+    title: 'Privacy Policy | UrbanEos AI',
+    description: 'Read the privacy policy for UrbanEos AI.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -11,7 +11,7 @@ export default function PrivacyPolicyPage() {
       <div className="max-w-3xl mx-auto prose prose-lg dark:prose-invert prose-h1:font-headline prose-h2:font-headline prose-p:text-muted-foreground">
         <h1>Privacy Policy</h1>
         <p>
-          Your privacy is important to us. It is Verdant Vista's policy to respect your privacy regarding any information we may collect from you across our website.
+          Your privacy is important to us. It is UrbanEos AI's policy to respect your privacy regarding any information we may collect from you across our website.
         </p>
 
         <h2>1. Information We Collect</h2>

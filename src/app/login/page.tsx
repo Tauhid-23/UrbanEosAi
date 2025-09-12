@@ -14,8 +14,8 @@ import { Logo } from '@/components/Logo';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: 'Login | Verdant Vista',
-    description: 'Login to your Verdant Vista account.',
+    title: 'Login | UrbanEos AI',
+    description: 'Login to your UrbanEos AI account.',
 };
 
 export default function LoginPage() {

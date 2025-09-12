@@ -78,7 +78,7 @@ export function Footer() {
                 </div>
             </div>
             <p className="text-sm text-muted-foreground text-center md:text-right">
-                &copy; {currentYear} Growhaus. All rights reserved.
+                &copy; {currentYear} UrbanEos AI. All rights reserved.
             </p>
         </div>
       </div>
