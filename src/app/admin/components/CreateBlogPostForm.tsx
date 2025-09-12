@@ -1,6 +1,8 @@
+
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useEffect, useRef } from 'react';
+import { useFormStatus } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -18,7 +20,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { createBlogPost, BlogPostState } from '@/lib/actions';
-import { useEffect, useRef } from 'react';
 import {
   Select,
   SelectContent,
@@ -51,7 +52,7 @@ export default function CreateBlogPostForm() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const initialState: BlogPostState = { message: null, errors: {} };
-  const [state, dispatch] = useFormState(createBlogPost, initialState);
+  const [state, dispatch] = useActionState(createBlogPost, initialState);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
