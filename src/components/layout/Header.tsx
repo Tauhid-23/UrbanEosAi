@@ -2,7 +2,13 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { Menu, ShoppingCart } from 'lucide-react';
 import { Logo } from '../Logo';
 import { cn } from '@/lib/utils';
@@ -20,7 +26,15 @@ const navLinks = [
 export function Header() {
   const pathname = usePathname();
 
-  const NavLink = ({ href, label, isMobile = false }: { href: string; label: string, isMobile?: boolean }) => (
+  const NavLink = ({
+    href,
+    label,
+    isMobile = false,
+  }: {
+    href: string;
+    label: string;
+    isMobile?: boolean;
+  }) => (
     <Link
       href={href}
       className={cn(
@@ -41,35 +55,39 @@ export function Header() {
         </div>
 
         <div className="flex items-center md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                  <span className="sr-only">Toggle Menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left">
-                <div className="p-4">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-6 w-6" />
+                <span className="sr-only">Toggle Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left">
+              <SheetHeader className="p-4 pb-0">
+                <SheetTitle>
                   <Logo />
-                  <nav className="mt-8 flex flex-col gap-6">
-                    {navLinks.map((link) => (
-                      <NavLink key={link.href} {...link} isMobile />
-                    ))}
-                  </nav>
-                </div>
-              </SheetContent>
-            </Sheet>
+                </SheetTitle>
+              </SheetHeader>
+              <div className="p-4">
+                <nav className="mt-8 flex flex-col gap-6">
+                  {navLinks.map((link) => (
+                    <NavLink key={link.href} {...link} isMobile />
+                  ))}
+                </nav>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
-        
+
         <div className="flex flex-1 items-center justify-center md:justify-start">
-            <div className="md:hidden">
-              <Logo />
-            </div>
-            <nav className="hidden md:flex items-center space-x-6">
-                {navLinks.map((link) => (
-                <NavLink key={link.href} {...link} />
-                ))}
-            </nav>
+          <div className="md:hidden">
+            <Logo />
+          </div>
+          <nav className="hidden md:flex items-center space-x-6">
+            {navLinks.map((link) => (
+              <NavLink key={link.href} {...link} />
+            ))}
+          </nav>
         </div>
 
         <div className="flex items-center gap-3">
@@ -79,12 +97,12 @@ export function Header() {
               <span className="sr-only">Cart</span>
             </Link>
           </Button>
-            <Button variant="ghost" asChild>
-              <Link href="/login">Sign In</Link>
-            </Button>
-            <Button asChild>
-              <Link href="/signup">Get Started</Link>
-            </Button>
+          <Button variant="ghost" asChild>
+            <Link href="/login">Sign In</Link>
+          </Button>
+          <Button asChild>
+            <Link href="/signup">Get Started</Link>
+          </Button>
         </div>
       </div>
     </header>
