@@ -197,7 +197,7 @@ function DashboardPage() {
   const [isScanMode, setScanMode] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [activeAccordionItem, setActiveAccordionItem] = useState<string | string[] | null>(null);
+  const [activeAccordionItem, setActiveAccordionItem] = useState<string | string[]>([]);
 
 
   useEffect(() => {
