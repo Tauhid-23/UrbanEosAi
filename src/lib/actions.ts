@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -132,6 +133,62 @@ export async function createBlogPost(
     console.error(e);
     return {
       message: 'Database Error: Failed to create blog post.',
+    };
+  }
+}
+
+const ProductFormSchema = z.object({
+  name: z.string().min(5, 'Product name must be at least 5 characters.'),
+  description: z.string().min(10, 'Description must be at least 10 characters.'),
+  price: z.coerce.number().min(0, 'Price must be a positive number.'),
+  category: z.string().min(2, 'Category is required.'),
+  imageId: z.string().min(1, 'Image ID is required.'),
+  rating: z.coerce.number().min(0).max(5).optional().default(4.5),
+});
+
+export type ProductState = {
+  errors?: {
+    name?: string[];
+    description?: string[];
+    price?: string[];
+    category?: string[];
+    imageId?: string[];
+    rating?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createProduct(
+  prevState: ProductState,
+  formData: FormData
+) {
+  const validatedFields = ProductFormSchema.safeParse({
+    name: formData.get('name'),
+    description: formData.get('description'),
+    price: formData.get('price'),
+    category: formData.get('category'),
+    imageId: formData.get('imageId'),
+    rating: formData.get('rating'),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Invalid fields. Failed to create product.',
+    };
+  }
+
+  try {
+    const productRef = collection(db, 'products');
+    await addDoc(productRef, validatedFields.data);
+
+    revalidatePath('/marketplace');
+    revalidatePath('/admin');
+    return { message: 'Product created successfully!' };
+  } catch (e) {
+    console.error(e);
+    return {
+      message: 'Database Error: Failed to create product.',
     };
   }
 }

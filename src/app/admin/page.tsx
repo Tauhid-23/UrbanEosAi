@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import CreateProductForm from './components/CreateProductForm';
 
 function AdminPage() {
   const { user } = useAuth();
@@ -151,9 +152,7 @@ function AdminPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">
-                  Product creation form will be here.
-                </p>
+                <CreateProductForm />
               </CardContent>
             </Card>
           </div>
