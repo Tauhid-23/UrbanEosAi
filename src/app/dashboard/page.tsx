@@ -2,6 +2,12 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
   Card,
   CardContent,
   CardDescription,
@@ -32,14 +38,12 @@ import {
   Settings,
   Target,
   Sprout,
-  X,
   Upload,
   Droplets,
   Sun,
   Thermometer,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
 import {
   LineChart,
   Line,
@@ -78,16 +82,16 @@ const initialOverviewItems = [
 ];
 
 const generateWeeksData = () => {
-    const data = [];
-    for (let i = 6; i >= 0; i--) {
-        data.push({
-            name: `Week ${8-i}`,
-            'Health': Math.floor(Math.random() * 20 + 80),
-            'Growth': Math.floor(Math.random() * 15 + 75)
-        });
-    }
-    return data;
-}
+  const data = [];
+  for (let i = 6; i >= 0; i--) {
+    data.push({
+      name: `Week ${8 - i}`,
+      Health: Math.floor(Math.random() * 20 + 80),
+      Growth: Math.floor(Math.random() * 15 + 75),
+    });
+  }
+  return data;
+};
 
 const initialPlantGrowth = [
   {
@@ -108,7 +112,7 @@ const initialPlantGrowth = [
     progress: 90,
     days: '60 days',
     healthData: generateWeeksData(),
-     vitals: { water: 'Optimal', light: '12h/day', temp: '24°C' },
+    vitals: { water: 'Optimal', light: '12h/day', temp: '24°C' },
   },
   {
     id: 'peppers',
@@ -118,7 +122,7 @@ const initialPlantGrowth = [
     progress: 50,
     days: '30 days',
     healthData: generateWeeksData(),
-     vitals: { water: 'Low', light: '13h/day', temp: '23°C' },
+    vitals: { water: 'Low', light: '13h/day', temp: '23°C' },
   },
   {
     id: 'lettuce',
@@ -177,7 +181,6 @@ const goals = [
 export default function DashboardPage() {
   const { toast } = useToast();
   const [plantGrowth, setPlantGrowth] = useState(initialPlantGrowth);
-  const [selectedPlant, setSelectedPlant] = useState<typeof initialPlantGrowth[0] | null>(null);
   const [isAddPlantOpen, setAddPlantOpen] = useState(false);
 
   useEffect(() => {
@@ -200,49 +203,39 @@ export default function DashboardPage() {
     });
   };
 
-  const handleSelectPlant = (plant: typeof initialPlantGrowth[0]) => {
-    setSelectedPlant(plant);
-  }
-
   const handleAddPlant = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const newPlantName = formData.get('plantName') as string;
     const newPlantSpecies = formData.get('plantSpecies') as string;
-    
+
     if (!newPlantName || !newPlantSpecies) {
-        toast({
-            variant: 'destructive',
-            title: 'Missing information',
-            description: 'Please fill out all fields.',
-        });
-        return;
+      toast({
+        variant: 'destructive',
+        title: 'Missing information',
+        description: 'Please fill out all fields.',
+      });
+      return;
     }
 
     const newPlant = {
-        id: `plant-${Date.now()}`,
-        icon: <Sprout className="h-8 w-8 text-primary" />,
-        name: newPlantName,
-        stage: 'Seedling',
-        progress: 5,
-        days: '1 day',
-        healthData: generateWeeksData(),
-        vitals: { water: 'Optimal', light: '12h/day', temp: '22°C' },
+      id: `plant-${Date.now()}`,
+      icon: <Sprout className="h-8 w-8 text-primary" />,
+      name: newPlantName,
+      stage: 'Seedling',
+      progress: 5,
+      days: '1 day',
+      healthData: generateWeeksData(),
+      vitals: { water: 'Optimal', light: '12h/day', temp: '22°C' },
     };
 
-    setPlantGrowth(prev => [...prev, newPlant]);
+    setPlantGrowth((prev) => [...prev, newPlant]);
     setAddPlantOpen(false);
     toast({
-        title: 'Plant Added!',
-        description: `${newPlantName} has been added to your garden.`,
+      title: 'Plant Added!',
+      description: `${newPlantName} has been added to your garden.`,
     });
   };
-
-  const plantDetails = useMemo(() => {
-      if(!selectedPlant) return null;
-      return plantGrowth.find(p => p.id === selectedPlant.id);
-  }, [selectedPlant, plantGrowth]);
-
 
   return (
     <>
@@ -281,7 +274,7 @@ export default function DashboardPage() {
                       Plant Growth Tracker
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Monitor your plants' development
+                      Monitor your plants' development and health.
                     </p>
                   </div>
                   <Button variant="outline" onClick={() => setAddPlantOpen(true)}>
@@ -289,34 +282,78 @@ export default function DashboardPage() {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <Accordion type="single" collapsible className="w-full">
                     {plantGrowth.map((plant) => (
-                      <button
-                        key={plant.id}
-                        className={cn(
-                            "w-full text-left bg-secondary/50 p-4 rounded-lg flex items-center gap-4 hover:bg-secondary transition-colors",
-                            selectedPlant?.id === plant.id && "ring-2 ring-primary bg-primary/10"
-                        )}
-                        onClick={() => handleSelectPlant(plant)}
-                      >
-                        <div className="bg-background p-2 rounded-full">{plant.icon}</div>
-                        <div className="flex-grow">
-                          <div className="flex justify-between items-baseline mb-1">
-                            <p className="font-semibold">
-                              {plant.name}{' '}
-                              <span className="text-xs text-muted-foreground font-normal">
-                                ({plant.stage})
-                              </span>
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {plant.days}
-                            </p>
+                      <AccordionItem value={plant.id} key={plant.id}>
+                        <AccordionTrigger className="hover:no-underline">
+                          <div
+                            className="w-full text-left p-4 rounded-lg flex items-center gap-4"
+                          >
+                            <div className="bg-background p-2 rounded-full">{plant.icon}</div>
+                            <div className="flex-grow">
+                              <div className="flex justify-between items-baseline mb-1">
+                                <p className="font-semibold">
+                                  {plant.name}{' '}
+                                  <span className="text-xs text-muted-foreground font-normal">
+                                    ({plant.stage})
+                                  </span>
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {plant.days}
+                                </p>
+                              </div>
+                              <Progress value={plant.progress} />
+                            </div>
                           </div>
-                          <Progress value={plant.progress} />
-                        </div>
-                      </button>
+                        </AccordionTrigger>
+                        <AccordionContent>
+                           <div className="px-4 pb-4">
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <div className="space-y-6">
+                                        <div>
+                                            <Label className="text-xs text-muted-foreground">Overall Progress</Label>
+                                            <Progress value={plant.progress} className="mt-1" />
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-4 text-center">
+                                        <div>
+                                            <Droplets className="h-6 w-6 mx-auto text-blue-500 mb-1" />
+                                            <p className="text-sm font-semibold">{plant.vitals.water}</p>
+                                            <p className="text-xs text-muted-foreground">Water</p>
+                                        </div>
+                                        <div>
+                                            <Sun className="h-6 w-6 mx-auto text-yellow-500 mb-1" />
+                                            <p className="text-sm font-semibold">{plant.vitals.light}</p>
+                                            <p className="text-xs text-muted-foreground">Sunlight</p>
+                                        </div>
+                                        <div>
+                                            <Thermometer className="h-6 w-6 mx-auto text-red-500 mb-1" />
+                                            <p className="text-sm font-semibold">{plant.vitals.temp}</p>
+                                            <p className="text-xs text-muted-foreground">Temp.</p>
+                                        </div>
+                                        </div>
+                                        <Button className="w-full">View Full History</Button>
+                                    </div>
+                                    <div>
+                                        <Label className="text-xs text-muted-foreground">Health & Growth Analytics (7 wks)</Label>
+                                        <div className="h-40 w-full mt-2">
+                                            <ResponsiveContainer>
+                                                <LineChart data={plant.healthData}>
+                                                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                                                    <XAxis dataKey="name" tick={{fontSize: 12}} />
+                                                    <YAxis tick={{fontSize: 12}} domain={[60, 100]} />
+                                                    <Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))'}}/>
+                                                    <Line type="monotone" dataKey="Health" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                                                    <Line type="monotone" dataKey="Growth" stroke="hsl(var(--primary) / 0.5)" strokeWidth={2} dot={false} />
+                                                </LineChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+                                </div>
+                           </div>
+                        </AccordionContent>
+                      </AccordionItem>
                     ))}
-                  </div>
+                  </Accordion>
                 </CardContent>
               </Card>
 
@@ -339,180 +376,123 @@ export default function DashboardPage() {
                       recommendations.
                     </p>
                     <div className="flex gap-4">
-                        <Button onClick={() => handleQuickAction('Start Scan')}>
-                            <Camera className="mr-2 h-4 w-4" /> Start Scan
-                        </Button>
-                        <Button variant="outline" onClick={() => handleQuickAction('Upload Image')}>
-                            <Upload className="mr-2 h-4 w-4" /> Upload Image
-                        </Button>
+                      <Button onClick={() => handleQuickAction('Start Scan')}>
+                        <Camera className="mr-2 h-4 w-4" /> Start Scan
+                      </Button>
+                      <Button variant="outline" onClick={() => handleQuickAction('Upload Image')}>
+                        <Upload className="mr-2 h-4 w-4" /> Upload Image
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
             <div className="space-y-8">
-              {plantDetails ? (
-                <Card className="relative">
-                     <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => setSelectedPlant(null)}>
-                        <X className="h-4 w-4" />
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-headline flex items-center gap-2">
+                    <Bot className="h-6 w-6 text-primary" /> AI
+                    Recommendations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {aiRecommendations.map((rec) => (
+                    <div
+                      key={rec.text}
+                      className={`p-4 rounded-lg border-l-4 ${rec.color}`}
+                    >
+                      <p className="font-semibold">{rec.text}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {rec.subtext}
+                      </p>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-headline">
+                    Quick Actions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {quickActions.map((action) => (
+                    <Button
+                      key={action.text}
+                      variant="outline"
+                      className="w-full justify-start gap-2"
+                      onClick={() => handleQuickAction(action.text)}
+                    >
+                      {action.icon}
+                      {action.text}
                     </Button>
-                    <CardHeader>
-                        <CardTitle className="font-headline flex items-center gap-3">
-                            <div className="bg-background p-3 rounded-full">{plantDetails.icon}</div>
-                            {plantDetails.name}
-                        </CardTitle>
-                        <CardDescription>Stage: {plantDetails.stage} | Age: {plantDetails.days}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                        <div>
-                            <Label className="text-xs text-muted-foreground">Overall Progress</Label>
-                            <Progress value={plantDetails.progress} className="mt-1" />
-                        </div>
-                        <div className="grid grid-cols-3 gap-4 text-center">
-                           <div>
-                                <Droplets className="h-6 w-6 mx-auto text-blue-500 mb-1" />
-                                <p className="text-sm font-semibold">{plantDetails.vitals.water}</p>
-                                <p className="text-xs text-muted-foreground">Water</p>
-                           </div>
-                           <div>
-                                <Sun className="h-6 w-6 mx-auto text-yellow-500 mb-1" />
-                                <p className="text-sm font-semibold">{plantDetails.vitals.light}</p>
-                                <p className="text-xs text-muted-foreground">Sunlight</p>
-                           </div>
-                           <div>
-                                <Thermometer className="h-6 w-6 mx-auto text-red-500 mb-1" />
-                                <p className="text-sm font-semibold">{plantDetails.vitals.temp}</p>
-                                <p className="text-xs text-muted-foreground">Temp.</p>
-                           </div>
-                        </div>
-
-                         <div>
-                            <Label className="text-xs text-muted-foreground">Health & Growth Analytics (7 wks)</Label>
-                             <div className="h-40 w-full mt-2">
-                                <ResponsiveContainer>
-                                    <LineChart data={plantDetails.healthData}>
-                                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                                        <XAxis dataKey="name" tick={{fontSize: 12}} />
-                                        <YAxis tick={{fontSize: 12}} domain={[60, 100]} />
-                                        <Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))'}}/>
-                                        <Line type="monotone" dataKey="Health" stroke="hsl(var(--primary))" strokeWidth={2} />
-                                        <Line type="monotone" dataKey="Growth" stroke="hsl(var(--primary) / 0.5)" strokeWidth={2} />
-                                    </LineChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </div>
-                        <Button className="w-full">View Full History</Button>
-                    </CardContent>
-                </Card>
-              ) : (
-                <>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="font-headline flex items-center gap-2">
-                        <Bot className="h-6 w-6 text-primary" /> AI
-                        Recommendations
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {aiRecommendations.map((rec) => (
-                        <div
-                          key={rec.text}
-                          className={`p-4 rounded-lg border-l-4 ${rec.color}`}
-                        >
-                          <p className="font-semibold">{rec.text}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {rec.subtext}
-                          </p>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="font-headline">
-                        Quick Actions
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {quickActions.map((action) => (
-                        <Button
-                          key={action.text}
-                          variant="outline"
-                          className="w-full justify-start gap-2"
-                          onClick={() => handleQuickAction(action.text)}
-                        >
-                          {action.icon}
-                          {action.text}
-                        </Button>
-                      ))}
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="font-headline flex items-center gap-2">
-                        <Target className="h-6 w-6 text-primary" /> This
-                        Month's Goals
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {goals.map((goal) => (
-                        <div key={goal.name}>
-                          <div className="flex justify-between items-center text-sm mb-1">
-                            <p className="font-medium">{goal.name}</p>
-                            <p className="text-muted-foreground">
-                              {goal.value}
-                            </p>
-                          </div>
-                          <Progress value={goal.progress} />
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                </>
-              )}
+                  ))}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-headline flex items-center gap-2">
+                    <Target className="h-6 w-6 text-primary" /> This
+                    Month's Goals
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {goals.map((goal) => (
+                    <div key={goal.name}>
+                      <div className="flex justify-between items-center text-sm mb-1">
+                        <p className="font-medium">{goal.name}</p>
+                        <p className="text-muted-foreground">
+                          {goal.value}
+                        </p>
+                      </div>
+                      <Progress value={goal.progress} />
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
       </div>
       <Dialog open={isAddPlantOpen} onOpenChange={setAddPlantOpen}>
         <DialogContent className="sm:max-w-[425px]">
-            <form onSubmit={handleAddPlant}>
-          <DialogHeader>
-            <DialogTitle>Add a New Plant</DialogTitle>
-            <DialogDescription>
-              Enter the details of your new plant to add it to your garden tracker.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="plantName" className="text-right">
-                Plant Name
-              </Label>
-              <Input
-                id="plantName"
-                name="plantName"
-                placeholder="e.g., Cherry Tomato"
-                className="col-span-3"
-                required
-              />
+          <form onSubmit={handleAddPlant}>
+            <DialogHeader>
+              <DialogTitle>Add a New Plant</DialogTitle>
+              <DialogDescription>
+                Enter the details of your new plant to add it to your garden tracker.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="plantName" className="text-right">
+                  Plant Name
+                </Label>
+                <Input
+                  id="plantName"
+                  name="plantName"
+                  placeholder="e.g., Cherry Tomato"
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="plantSpecies" className="text-right">
+                  Species
+                </Label>
+                <Input
+                  id="plantSpecies"
+                  name="plantSpecies"
+                  placeholder="e.g., Solanum lycopersicum"
+                  className="col-span-3"
+                  required
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="plantSpecies" className="text-right">
-                Species
-              </Label>
-              <Input
-                id="plantSpecies"
-                name="plantSpecies"
-                placeholder="e.g., Solanum lycopersicum"
-                className="col-span-3"
-                required
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setAddPlantOpen(false)}>Cancel</Button>
-            <Button type="submit">Add Plant</Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setAddPlantOpen(false)}>Cancel</Button>
+              <Button type="submit">Add Plant</Button>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
