@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/context/AuthContext';
 
 export const metadata: Metadata = {
   title: 'UrbanEos AI',
@@ -23,10 +24,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet" />
       </head>
       <body className={cn('font-body antialiased flex flex-col min-h-screen')}>
-        <Header />
-        <main className="flex-grow">{children}</main>
-        <Footer />
-        <Toaster />
+        <AuthProvider>
+          <Header />
+          <main className="flex-grow">{children}</main>
+          <Footer />
+          <Toaster />
+        </AuthProvider>
       </body>
     </html>
   );

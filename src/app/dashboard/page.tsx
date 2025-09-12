@@ -50,6 +50,7 @@ import {
   Video,
   VideoOff,
   AlertCircle,
+  LogOut,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -61,6 +62,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import withAuth from '@/components/withAuth';
+import { useAuth } from '@/context/AuthContext';
 
 const initialOverviewItems = [
   {
@@ -186,7 +189,8 @@ const goals = [
   { name: 'Care Sessions', progress: 80, value: '12/15' },
 ];
 
-export default function DashboardPage() {
+function DashboardPage() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [plantGrowth, setPlantGrowth] = useState(initialPlantGrowth);
   const [isAddPlantOpen, setAddPlantOpen] = useState(false);
@@ -332,7 +336,7 @@ export default function DashboardPage() {
         <div className="max-w-7xl mx-auto">
           <header className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold font-headline">
-              Welcome back, <span className="text-primary">Sarah!</span>
+              Welcome back, <span className="text-primary">{user?.displayName || 'Gardener'}!</span>
             </h1>
             <p className="text-muted-foreground mt-2">
               Your urban garden is thriving. Here's your progress overview.
@@ -630,3 +634,5 @@ export default function DashboardPage() {
     </>
   );
 }
+
+export default withAuth(DashboardPage);

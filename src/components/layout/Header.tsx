@@ -9,14 +9,16 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { Menu, ShoppingCart } from 'lucide-react';
+import { Menu, ShoppingCart, LogOut } from 'lucide-react';
 import { Logo } from '../Logo';
 import { cn } from '@/lib/utils';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const navLinks = [
   { href: '/', label: 'Home' },
-  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dashboard', label: 'Dashboard', auth: true },
   { href: '/blog', label: 'Blog' },
   { href: '/marketplace', label: 'Marketplace' },
   { href: '/resources', label: 'Resources' },
@@ -25,6 +27,26 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast({
+        title: 'Signed Out',
+        description: 'You have been successfully signed out.',
+      });
+      router.push('/');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Sign Out Failed',
+        description: error.message,
+      });
+    }
+  };
 
   const NavLink = ({
     href,
@@ -46,6 +68,8 @@ export function Header() {
       {label}
     </Link>
   );
+
+  const filteredNavLinks = navLinks.filter(link => !link.auth || (link.auth && user));
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -70,7 +94,7 @@ export function Header() {
               </SheetHeader>
               <div className="p-4">
                 <nav className="mt-8 flex flex-col gap-6">
-                  {navLinks.map((link) => (
+                  {filteredNavLinks.map((link) => (
                     <NavLink key={link.href} {...link} isMobile />
                   ))}
                 </nav>
@@ -84,7 +108,7 @@ export function Header() {
             <Logo />
           </div>
           <nav className="hidden md:flex items-center space-x-6">
-            {navLinks.map((link) => (
+            {filteredNavLinks.map((link) => (
               <NavLink key={link.href} {...link} />
             ))}
           </nav>
@@ -97,12 +121,23 @@ export function Header() {
               <span className="sr-only">Cart</span>
             </Link>
           </Button>
-          <Button variant="ghost" asChild>
-            <Link href="/login">Sign In</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/signup">Get Started</Link>
-          </Button>
+          {user ? (
+            <>
+              <Button variant="ghost" onClick={handleSignOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Sign Out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">Get Started</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
