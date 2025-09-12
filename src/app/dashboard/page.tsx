@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Accordion,
   AccordionContent,
@@ -22,6 +22,11 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Input } from '@/components/ui/input';
@@ -42,6 +47,9 @@ import {
   Droplets,
   Sun,
   Thermometer,
+  Video,
+  VideoOff,
+  AlertCircle,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -182,6 +190,10 @@ export default function DashboardPage() {
   const { toast } = useToast();
   const [plantGrowth, setPlantGrowth] = useState(initialPlantGrowth);
   const [isAddPlantOpen, setAddPlantOpen] = useState(false);
+  const [isScanMode, setScanMode] = useState(false);
+  const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [activeAccordionItem, setActiveAccordionItem] = useState<string | null>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -196,11 +208,57 @@ export default function DashboardPage() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    if (isScanMode) {
+      const getCameraPermission = async () => {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+           toast({
+             variant: 'destructive',
+             title: 'Camera Not Supported',
+             description: 'Your browser does not support camera access.',
+           });
+           setHasCameraPermission(false);
+           return;
+        }
+
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          setHasCameraPermission(true);
+  
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        } catch (error) {
+          console.error('Error accessing camera:', error);
+          setHasCameraPermission(false);
+          toast({
+            variant: 'destructive',
+            title: 'Camera Access Denied',
+            description: 'Please enable camera permissions in your browser settings to use this app.',
+          });
+        }
+      };
+  
+      getCameraPermission();
+
+      return () => {
+        if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            stream.getTracks().forEach(track => track.stop());
+        }
+      }
+    }
+  }, [isScanMode, toast]);
+
   const handleQuickAction = (action: string) => {
-    toast({
-      title: 'Action Triggered',
-      description: `You clicked on "${action}". In a real app, this would perform the action.`,
-    });
+    if (action === 'Start Scan') {
+        setScanMode(true);
+    } else {
+        toast({
+            title: 'Action Triggered',
+            description: `You clicked on "${action}". In a real app, this would perform the action.`,
+        });
+    }
   };
 
   const handleAddPlant = (event: React.FormEvent<HTMLFormElement>) => {
@@ -236,6 +294,37 @@ export default function DashboardPage() {
       description: `${newPlantName} has been added to your garden.`,
     });
   };
+  
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      toast({
+        title: 'Image Uploaded',
+        description: `${file.name} is ready for analysis.`,
+      });
+    }
+  };
+
+  const handleCapture = () => {
+    if (videoRef.current) {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = video_current.videoHeight;
+        const context = canvas.getContext('2d');
+        if (context) {
+            context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            const dataUri = canvas.toDataURL('image/png');
+            // Here you would typically send the dataUri to your AI service
+            console.log('Captured image data URI:', dataUri.substring(0, 50) + '...');
+            toast({
+                title: "Image Captured!",
+                description: "Sending for analysis...",
+            });
+            setScanMode(false);
+        }
+    }
+  };
+
 
   return (
     <>
@@ -282,7 +371,7 @@ export default function DashboardPage() {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <Accordion type="single" collapsible className="w-full">
+                  <Accordion type="single" collapsible className="w-full" value={activeAccordionItem ?? undefined} onValueChange={setActiveAccordionItem}>
                     {plantGrowth.map((plant) => (
                       <AccordionItem value={plant.id} key={plant.id}>
                         <AccordionTrigger className="hover:no-underline">
@@ -331,7 +420,7 @@ export default function DashboardPage() {
                                             <p className="text-xs text-muted-foreground">Temp.</p>
                                         </div>
                                         </div>
-                                        <Button className="w-full">View Full History</Button>
+                                        <Button className="w-full" onClick={() => toast({ title: 'Viewing Full History', description: `Details for ${plant.name}`})}>View Full History</Button>
                                     </div>
                                     <div>
                                         <Label className="text-xs text-muted-foreground">Health & Growth Analytics (7 wks)</Label>
@@ -379,8 +468,11 @@ export default function DashboardPage() {
                       <Button onClick={() => handleQuickAction('Start Scan')}>
                         <Camera className="mr-2 h-4 w-4" /> Start Scan
                       </Button>
-                      <Button variant="outline" onClick={() => handleQuickAction('Upload Image')}>
-                        <Upload className="mr-2 h-4 w-4" /> Upload Image
+                      <Button variant="outline" asChild>
+                         <Label htmlFor="upload-image" className="cursor-pointer">
+                            <Upload className="mr-2 h-4 w-4" /> Upload Image
+                            <Input id="upload-image" type="file" className="sr-only" accept="image/*" onChange={handleFileSelect} />
+                         </Label>
                       </Button>
                     </div>
                   </div>
@@ -421,7 +513,7 @@ export default function DashboardPage() {
                       key={action.text}
                       variant="outline"
                       className="w-full justify-start gap-2"
-                      onClick={() => handleQuickAction(action.text)}
+                      onClick={() => toast({ title: 'Quick Action', description: `${action.text} triggered.`})}
                     >
                       {action.icon}
                       {action.text}
@@ -494,6 +586,45 @@ export default function DashboardPage() {
               <Button type="submit">Add Plant</Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isScanMode} onOpenChange={setScanMode}>
+        <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+                <DialogTitle>Scan Plant</DialogTitle>
+                <DialogDescription>
+                    Center your plant in the frame and take a picture.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="relative aspect-video bg-secondary rounded-md overflow-hidden flex items-center justify-center">
+                <video ref={videoRef} className="w-full h-full object-cover" autoPlay muted playsInline />
+                {hasCameraPermission === false && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 p-4">
+                         <Alert variant="destructive">
+                            <AlertCircle className="h-4 w-4" />
+                            <AlertTitle>Camera Access Denied</AlertTitle>
+                            <AlertDescription>
+                                Please allow camera access in your browser settings to use this feature.
+                            </AlertDescription>
+                        </Alert>
+                    </div>
+                )}
+                 {hasCameraPermission === null && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 p-4">
+                        <p>Requesting camera permission...</p>
+                    </div>
+                 )}
+            </div>
+            <DialogFooter className="sm:justify-between">
+                 <Button variant="outline" onClick={() => setScanMode(false)}>
+                    <VideoOff className="mr-2 h-4 w-4" />
+                    Cancel
+                </Button>
+                <Button onClick={handleCapture} disabled={!hasCameraPermission}>
+                    <Camera className="mr-2 h-4 w-4" />
+                    Capture
+                </Button>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
