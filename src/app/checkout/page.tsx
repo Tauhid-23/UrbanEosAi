@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -5,10 +8,7 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
-  CardDescription,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { products } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -16,10 +16,16 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 export default function CheckoutPage() {
-  const cartItems = products.slice(0, 2);
+  const initialCart = products.slice(0, 2);
+  const [cartItems, setCartItems] = useState(initialCart);
+
   const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
   const shipping = 5.0;
   const total = subtotal + shipping;
+
+  const handleRemoveItem = (id: string) => {
+    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
+  };
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -31,38 +37,52 @@ export default function CheckoutPage() {
               <CardTitle>Your Items</CardTitle>
             </CardHeader>
             <CardContent>
-              {cartItems.map((item, index) => {
-                const image = PlaceHolderImages.find(
-                  (p) => p.id === item.imageId
-                );
-                return (
-                  <div key={item.id}>
-                    <div className="flex items-center gap-4 py-4">
-                      <div className="relative h-24 w-24 rounded-md overflow-hidden bg-secondary">
-                        {image && (
-                          <Image
-                            src={image.imageUrl}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                          />
-                        )}
+              {cartItems.length > 0 ? (
+                cartItems.map((item, index) => {
+                  const image = PlaceHolderImages.find(
+                    (p) => p.id === item.imageId
+                  );
+                  return (
+                    <div key={item.id}>
+                      <div className="flex items-center gap-4 py-4">
+                        <div className="relative h-24 w-24 rounded-md overflow-hidden bg-secondary">
+                          {image && (
+                            <Image
+                              src={image.imageUrl}
+                              alt={item.name}
+                              fill
+                              className="object-cover"
+                            />
+                          )}
+                        </div>
+                        <div className="flex-grow">
+                          <h3 className="font-semibold">{item.name}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {item.category}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold">
+                            ${item.price.toFixed(2)}
+                          </p>
+                          <Button
+                            variant="link"
+                            className="text-xs text-destructive h-auto p-0"
+                            onClick={() => handleRemoveItem(item.id)}
+                          >
+                            Remove
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex-grow">
-                        <h3 className="font-semibold">{item.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {item.category}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold">${item.price.toFixed(2)}</p>
-                        <Button variant="link" className="text-xs text-destructive h-auto p-0">Remove</Button>
-                      </div>
+                      {index < cartItems.length - 1 && <Separator />}
                     </div>
-                    {index < cartItems.length - 1 && <Separator />}
-                  </div>
-                );
-              })}
+                  );
+                })
+              ) : (
+                <p className="text-center text-muted-foreground py-8">
+                  Your cart is empty.
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -87,12 +107,14 @@ export default function CheckoutPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button className="w-full">Proceed to Payment</Button>
+              <Button className="w-full" disabled={cartItems.length === 0}>
+                Proceed to Payment
+              </Button>
             </CardFooter>
           </Card>
           <div className="text-center">
-             <Link href="/marketplace">
-                <Button variant="outline">Continue Shopping</Button>
+            <Link href="/marketplace">
+              <Button variant="outline">Continue Shopping</Button>
             </Link>
           </div>
         </div>

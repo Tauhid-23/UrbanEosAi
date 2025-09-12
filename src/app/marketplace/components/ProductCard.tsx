@@ -1,3 +1,5 @@
+'use client';
+
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
@@ -11,9 +13,19 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { Product } from '@/lib/types';
 import { ShoppingCart, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 export default function ProductCard({ product }: { product: Product }) {
   const image = PlaceHolderImages.find((p) => p.id === product.imageId);
+  const { toast } = useToast();
+
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    toast({
+      title: 'Added to Cart!',
+      description: `${product.name} has been added to your cart.`,
+    });
+  };
 
   return (
     <Card className="flex flex-col overflow-hidden h-full">
@@ -65,7 +77,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
       </CardContent>
       <div className="p-6 pt-0">
-        <Button className="w-full">
+        <Button className="w-full" onClick={handleAddToCart}>
           <ShoppingCart className="mr-2 h-4 w-4" />
           Add to Cart
         </Button>
