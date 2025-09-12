@@ -375,7 +375,7 @@ function DashboardPage() {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <Accordion type="single" collapsible className="w-full" value={activeAccordionItem ?? undefined} onValueChange={setActiveAccordionItem}>
+                  <Accordion type="single" collapsible className="w-full" onValueChange={setActiveAccordionItem}>
                     {plantGrowth.map((plant) => (
                       <AccordionItem value={plant.id} key={plant.id}>
                         <AccordionTrigger className="hover:no-underline">
