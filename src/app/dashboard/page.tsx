@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -18,17 +21,10 @@ import {
   Settings,
   Target,
   Sprout,
-  Grape,
 } from 'lucide-react';
-import type { Metadata } from 'next';
+import { useToast } from '@/hooks/use-toast';
 
-export const metadata: Metadata = {
-  title: 'Dashboard | GreenAI',
-  description:
-    'Manage your plants, track their health, and get AI recommendations.',
-};
-
-const overviewItems = [
+const initialOverviewItems = [
   {
     icon: <Leaf className="h-6 w-6 text-primary" />,
     title: 'Active Plants',
@@ -55,8 +51,9 @@ const overviewItems = [
   },
 ];
 
-const plantGrowth = [
+const initialPlantGrowth = [
   {
+    id: 'tomatoes',
     icon: <Sprout className="h-8 w-8 text-primary" />,
     name: 'Cherry Tomatoes',
     stage: 'Flowering',
@@ -64,6 +61,7 @@ const plantGrowth = [
     days: '45 days',
   },
   {
+    id: 'basil',
     icon: <Sprout className="h-8 w-8 text-primary" />,
     name: 'Basil',
     stage: 'Mature',
@@ -71,6 +69,7 @@ const plantGrowth = [
     days: '60 days',
   },
   {
+    id: 'peppers',
     icon: <Sprout className="h-8 w-8 text-primary" />,
     name: 'Bell Peppers',
     stage: 'Growing',
@@ -78,6 +77,7 @@ const plantGrowth = [
     days: '30 days',
   },
   {
+    id: 'lettuce',
     icon: <Sprout className="h-8 w-8 text-primary" />,
     name: 'Lettuce',
     stage: 'Seedling',
@@ -93,18 +93,41 @@ const aiRecommendations = [
 ];
 
 const quickActions = [
-    { icon: <Calendar className="h-5 w-5" />, text: 'Schedule Watering' },
-    { icon: <BarChart className="h-5 w-5" />, text: 'View Analytics' },
-    { icon: <Settings className="h-5 w-5" />, text: 'Garden Settings' },
-]
+    { icon: <Calendar className="h-5 w-5" />, text: 'Schedule Watering', action: 'schedule' },
+    { icon: <BarChart className="h-5 w-5" />, text: 'View Analytics', action: 'analytics' },
+    { icon: <Settings className="h-5 w-5" />, text: 'Garden Settings', action: 'settings' },
+];
 
 const goals = [
     { name: 'Plants Added', progress: 66, value: '2/3' },
     { name: 'Harvests', progress: 62.5, value: '5/8' },
     { name: 'Care Sessions', progress: 80, value: '12/15' },
-]
+];
 
 export default function DashboardPage() {
+  const { toast } = useToast();
+  const [plantGrowth, setPlantGrowth] = useState(initialPlantGrowth);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPlantGrowth(prevPlants => 
+        prevPlants.map(plant => {
+          const newProgress = Math.min(100, plant.progress + Math.random() * 0.5);
+          return { ...plant, progress: newProgress };
+        })
+      );
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleQuickAction = (action: string) => {
+    toast({
+        title: 'Action Triggered',
+        description: `You clicked on "${action}". In a real app, this would perform the action.`
+    })
+  }
+
   return (
     <div className="bg-secondary/30 min-h-screen-minus-header p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
@@ -118,7 +141,7 @@ export default function DashboardPage() {
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {overviewItems.map((item) => (
+          {initialOverviewItems.map((item) => (
             <Card key={item.title}>
               <CardContent className="p-6 flex items-center gap-4">
                 <div className="bg-primary/10 p-3 rounded-lg">{item.icon}</div>
@@ -144,7 +167,7 @@ export default function DashboardPage() {
                     Monitor your plants' development
                   </p>
                 </div>
-                <Button variant="outline">
+                <Button variant="outline" onClick={() => handleQuickAction('Add Plant')}>
                   <Plus className="mr-2 h-4 w-4" /> Add Plant
                 </Button>
               </CardHeader>
@@ -152,7 +175,7 @@ export default function DashboardPage() {
                 <div className="space-y-4">
                   {plantGrowth.map((plant) => (
                     <div
-                      key={plant.name}
+                      key={plant.id}
                       className="bg-secondary/50 p-4 rounded-lg flex items-center gap-4"
                     >
                       <div className="bg-background p-2 rounded-full">{plant.icon}</div>
@@ -187,7 +210,7 @@ export default function DashboardPage() {
                     Take a photo to instantly identify diseases and get treatment
                     recommendations
                   </p>
-                  <Button>
+                  <Button onClick={() => handleQuickAction('Start Scan')}>
                     <Camera className="mr-2 h-4 w-4" /> Start Scan
                   </Button>
                 </div>
@@ -216,7 +239,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {quickActions.map(action => (
-                    <Button key={action.text} variant="outline" className="w-full justify-start">
+                    <Button key={action.text} variant="outline" className="w-full justify-start" onClick={() => handleQuickAction(action.text)}>
                         {action.icon}
                         {action.text}
                     </Button>
