@@ -20,8 +20,7 @@ export default function Home() {
   const analyticsImage = PlaceHolderImages.find((img) => img.id === 'analytics-dashboard');
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <main className="flex-grow">
+    <div className="flex flex-col bg-background text-foreground">
         {/* Hero Section */}
         <section className="py-12 md:py-24">
           <div className="container mx-auto px-4">
@@ -35,19 +34,23 @@ export default function Home() {
                   Transform your space into a lush, thriving garden with AI. We empower you to grow with confidence, from personalized recommendations to smart analytics, all through our curated marketplace.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="text-lg h-14 px-8 font-bold">
-                    Start Your Green Journey
+                  <Button size="lg" className="text-lg h-14 px-8 font-bold" asChild>
+                    <Link href="/signup">Start Your Green Journey</Link>
                   </Button>
-                  <Button size="lg" variant="outline" className="text-lg h-14 px-8 font-bold">
-                    <PlayCircle className="mr-2 h-6 w-6" />
-                    Watch Demo
+                  <Button size="lg" variant="outline" className="text-lg h-14 px-8 font-bold" asChild>
+                    <Link href="#features">
+                      <PlayCircle className="mr-2 h-6 w-6" />
+                      Watch Demo
+                    </Link>
                   </Button>
                 </div>
                 <Card className="mt-8 bg-card border-2">
                   <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-4">
                     <p className="font-bold whitespace-nowrap">AI-driven gardening plan & personality</p>
                     <Input placeholder="e.g. I live in a flat with a small balcony" className="flex-grow" />
-                    <Button>Get My Plan</Button>
+                    <Button asChild>
+                      <Link href="/dashboard">Get My Plan</Link>
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
@@ -250,7 +253,9 @@ export default function Home() {
                   <li className="flex items-center gap-2"><Check className="h-5 w-5 text-primary" /> Community access</li>
                   <li className="flex items-center gap-2"><Check className="h-5 w-5 text-primary" /> Email support</li>
                 </ul>
-                <Button variant="outline" className="w-full h-12 text-lg font-bold">Get Started for Free</Button>
+                <Button variant="outline" className="w-full h-12 text-lg font-bold" asChild>
+                  <Link href="/signup">Get Started for Free</Link>
+                </Button>
               </Card>
               <Card className="p-8 border-2 border-primary shadow-2xl relative">
                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-bold">Most Popular</div>
@@ -265,7 +270,9 @@ export default function Home() {
                   <li className="flex items-center gap-2"><Check className="h-5 w-5 text-primary" /> Priority support</li>
                   <li className="flex items-center gap-2"><Check className="h-5 w-5 text-primary" /> Marketplace discounts</li>
                 </ul>
-                <Button className="w-full h-12 text-lg font-bold">Start 14-Day Free Trial</Button>
+                <Button className="w-full h-12 text-lg font-bold" asChild>
+                  <Link href="/signup">Start 14-Day Free Trial</Link>
+                </Button>
               </Card>
               <Card className="p-8">
                 <h3 className="text-2xl font-bold">Premium</h3>
@@ -278,7 +285,9 @@ export default function Home() {
                   <li className="flex items-center gap-2"><Check className="h-5 w-5 text-primary" /> Personalized consultations</li>
                   <li className="flex items-center gap-2"><Check className="h-5 w-5 text-primary" /> Phone support</li>
                 </ul>
-                <Button variant="outline" className="w-full h-12 text-lg font-bold">Start Free Trial</Button>
+                <Button variant="outline" className="w-full h-12 text-lg font-bold" asChild>
+                  <Link href="/signup">Start Free Trial</Link>
+                </Button>
               </Card>
             </div>
           </div>
@@ -312,18 +321,21 @@ export default function Home() {
                                 })}
                                 <span className="ml-2 text-sm font-medium">+12k happy gardeners</span>
                             </div>
-                             <Button variant="outline" className="font-bold">Book a Free Demo Now</Button>
+                             <Button variant="outline" className="font-bold" asChild>
+                               <Link href="/contact">Book a Free Demo Now</Link>
+                             </Button>
                         </div>
                     </Card>
                      <Card className="p-6">
                         <h3 className="font-bold text-lg mb-2">Send us a message</h3>
                         <p className="text-muted-foreground mb-4">We are here to answer any questions you may have about Growhaus.</p>
-                        <Button className="w-full font-bold text-lg h-12">Send a Message</Button>
+                        <Button className="w-full font-bold text-lg h-12" asChild>
+                          <Link href="/contact">Send a Message</Link>
+                        </Button>
                     </Card>
                 </div>
             </div>
         </section>
-      </main>
     </div>
   );
 }
