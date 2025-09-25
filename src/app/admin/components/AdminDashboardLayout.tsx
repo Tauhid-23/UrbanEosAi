@@ -101,9 +101,10 @@ export default function AdminDashboardLayout({
                   as="a"
                   href={item.href}
                   isActive={pathname === item.href}
+                  tooltip={item.label}
                 >
                   <item.icon />
-                  {item.label}
+                  <span>{item.label}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))}
@@ -112,9 +113,9 @@ export default function AdminDashboardLayout({
         <SidebarFooter>
            <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton as="a" href="/">
+                    <SidebarMenuButton as="a" href="/" tooltip="Exit Admin">
                         <Shield className="transform -scale-x-100" />
-                        Exit Admin
+                        <span>Exit Admin</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>
            </SidebarMenu>
@@ -127,3 +128,5 @@ export default function AdminDashboardLayout({
     </SidebarProvider>
   );
 }
+
+    

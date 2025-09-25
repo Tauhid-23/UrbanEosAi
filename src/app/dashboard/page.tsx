@@ -378,8 +378,8 @@ function DashboardPage() {
 
   return (
     <>
-      <div className="bg-secondary/30 min-h-screen-minus-header p-4 sm:p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className="bg-secondary/30 min-h-screen-minus-header">
+        <div className="container mx-auto p-4 sm:p-8">
           <header className="mb-8">
             <h1 className="text-3xl md:text-4xl font-bold font-headline">
               Welcome back, <span className="text-primary">{user?.displayName || 'Gardener'}!</span>
@@ -808,3 +808,5 @@ function DashboardPage() {
 }
 
 export default withAuth(DashboardPage);
+
+    

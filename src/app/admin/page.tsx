@@ -14,6 +14,7 @@ import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ContactMessage } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
+import { Users, Sprout, ShoppingBasket, Newspaper } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const [userCount, setUserCount] = useState(0);
@@ -69,87 +70,73 @@ export default function AdminDashboardPage() {
     fetchCounts();
   }, []);
 
+  const stats = [
+    { title: 'Total Users', count: userCount, icon: <Users className="h-6 w-6 text-muted-foreground" /> },
+    { title: 'Total Plants', count: plantCount, icon: <Sprout className="h-6 w-6 text-muted-foreground" /> },
+    { title: 'Total Orders', count: orderCount, icon: <ShoppingBasket className="h-6 w-6 text-muted-foreground" /> },
+    { title: 'Blog Posts', count: blogPostCount, icon: <Newspaper className="h-6 w-6 text-muted-foreground" /> },
+  ]
+
 
   return (
     <div className="grid gap-6">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {stats.map(stat => (
+            <Card key={stat.title}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                    {stat.icon}
+                </CardHeader>
+                <CardContent>
+                    {loading ? <Skeleton className="h-8 w-1/2" /> : <p className="text-2xl font-bold">{stat.count}</p>}
+                </CardContent>
+            </Card>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Total Users</CardTitle>
-            <CardDescription>All registered users</CardDescription>
+            <CardTitle>Recent Contact Messages</CardTitle>
           </CardHeader>
           <CardContent>
-            {loading ? <Skeleton className="h-8 w-1/2" /> : <p className="text-3xl font-bold">{userCount}</p>}
+            {loading ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+              </div>
+            ) : recentMessages.length > 0 ? (
+              <ul className="space-y-4">
+                {recentMessages.map(msg => (
+                  <li key={msg.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                      <p className="font-semibold">{msg.name} <span className="text-sm text-muted-foreground">({msg.email})</span></p>
+                      <p className="text-sm text-muted-foreground truncate">{msg.message}</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground whitespace-nowrap self-end sm:self-center">
+                      {formatDistanceToNow(msg.createdAt, { addSuffix: true })}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground">No messages yet.</p>
+            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Total Plants</CardTitle>
-            <CardDescription>All user-tracked plants</CardDescription>
+            <CardTitle>Revenue</CardTitle>
           </CardHeader>
           <CardContent>
-              {loading ? <Skeleton className="h-8 w-1/2" /> : <p className="text-3xl font-bold">{plantCount}</p>}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Orders</CardTitle>
-            <CardDescription>All marketplace orders</CardDescription>
-          </CardHeader>
-          <CardContent>
-              {loading ? <Skeleton className="h-8 w-1/2" /> : <p className="text-3xl font-bold">{orderCount}</p>}
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Blog Posts</CardTitle>
-            <CardDescription>Published articles</CardDescription>
-          </CardHeader>
-          <CardContent>
-              {loading ? <Skeleton className="h-8 w-1/2" /> : <p className="text-3xl font-bold">{blogPostCount}</p>}
+            <p className="text-muted-foreground">
+              Revenue chart will be displayed here.
+            </p>
           </CardContent>
         </Card>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Contact Messages</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-            </div>
-          ) : recentMessages.length > 0 ? (
-            <ul className="space-y-4">
-              {recentMessages.map(msg => (
-                <li key={msg.id} className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold">{msg.name} <span className="text-sm text-muted-foreground">({msg.email})</span></p>
-                    <p className="text-sm text-muted-foreground truncate">{msg.message}</p>
-                  </div>
-                  <p className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formatDistanceToNow(msg.createdAt, { addSuffix: true })}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted-foreground">No messages yet.</p>
-          )}
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Revenue</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Revenue chart will be displayed here.
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }
+
+    

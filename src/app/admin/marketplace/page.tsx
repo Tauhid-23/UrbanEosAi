@@ -22,14 +22,14 @@ export default function AdminMarketplacePage() {
     <>
       <div>
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div>
               <CardTitle>Marketplace Management</CardTitle>
               <CardDescription>
                 A table of all marketplace products with management actions.
               </CardDescription>
             </div>
-            <Button onClick={() => setCreateDialogOpen(true)}>
+            <Button onClick={() => setCreateDialogOpen(true)} className="w-full md:w-auto">
               <Plus className="mr-2 h-4 w-4" />
               Add Product
             </Button>
@@ -48,7 +48,7 @@ export default function AdminMarketplacePage() {
               Add a new item to the marketplace.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-4 overflow-y-auto max-h-[70vh]">
             <CreateProductForm />
           </div>
         </DialogContent>
@@ -56,3 +56,5 @@ export default function AdminMarketplacePage() {
     </>
   );
 }
+
+    

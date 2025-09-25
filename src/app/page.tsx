@@ -1,3 +1,4 @@
+
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -25,15 +26,15 @@ export default function Home() {
         <section className="py-12 md:py-24">
           <div className="container mx-auto px-4">
             <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div className="space-y-6">
+              <div className="space-y-6 text-center md:text-left">
                 <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter">
                   Make Urban Gardening Simple
                   <span className="text-primary"> with AI Guidance</span>
                 </h1>
-                <p className="max-w-xl text-lg text-muted-foreground">
+                <p className="max-w-xl text-lg text-muted-foreground mx-auto md:mx-0">
                   Transform your space into a lush, thriving garden with AI. We empower you to grow with confidence, from personalized recommendations to smart analytics, all through our curated marketplace.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                   <Button size="lg" className="text-lg h-14 px-8 font-bold" asChild>
                     <Link href="/signup">Start Your Green Journey</Link>
                   </Button>
@@ -46,9 +47,9 @@ export default function Home() {
                 </div>
                 <Card className="mt-8 bg-card border-2">
                   <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-4">
-                    <p className="font-bold whitespace-nowrap">AI-driven gardening plan & personality</p>
+                    <p className="font-bold whitespace-nowrap text-sm sm:text-base">AI-driven gardening plan & personality</p>
                     <Input placeholder="e.g. I live in a flat with a small balcony" className="flex-grow" />
-                    <Button asChild>
+                    <Button asChild className="w-full sm:w-auto">
                       <Link href="/dashboard">Get My Plan</Link>
                     </Button>
                   </CardContent>
@@ -152,7 +153,7 @@ export default function Home() {
                         Monitor your plant quality, generate patterns, and get data-driven improvement tips.
                     </p>
                 </div>
-                <div className="relative w-full h-[500px] md:h-[700px] rounded-2xl overflow-hidden border-2 shadow-lg">
+                <div className="relative w-full h-[300px] sm:h-[500px] md:h-[700px] rounded-2xl overflow-hidden border-2 shadow-lg">
                     {analyticsImage && (
                         <Image
                         src={analyticsImage.imageUrl}
@@ -308,7 +309,7 @@ export default function Home() {
                     <Card className="p-6">
                         <h3 className="font-bold text-lg mb-2">Book a consultation</h3>
                         <p className="text-muted-foreground mb-4">Our expert will help you to choose the best option for your needs.</p>
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                             <div className="flex items-center">
                                 {[...Array(3)].map((_, i) => {
                                     const image = PlaceHolderImages.find(p => p.id === `testimonial-${i + 1}`);
@@ -321,7 +322,7 @@ export default function Home() {
                                 })}
                                 <span className="ml-2 text-sm font-medium">+12k happy gardeners</span>
                             </div>
-                             <Button variant="outline" className="font-bold" asChild>
+                             <Button variant="outline" className="font-bold w-full sm:w-auto" asChild>
                                <Link href="/contact">Book a Free Demo Now</Link>
                              </Button>
                         </div>
@@ -339,3 +340,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

@@ -33,11 +33,11 @@ export default function AdminHeader() {
     <header className="flex h-16 shrink-0 items-center gap-4 border-b bg-background px-4 md:px-6">
       <div className="flex items-center gap-2">
         <SidebarTrigger className="md:hidden" />
-        <h1 className="text-lg font-semibold">{getPageTitle()}</h1>
+        <h1 className="text-lg font-semibold md:text-xl">{getPageTitle()}</h1>
       </div>
 
-      <div className="ml-auto flex flex-1 items-center justify-end gap-4">
-        <div className="relative w-full max-w-sm">
+      <div className="ml-auto flex flex-1 items-center justify-end gap-2 md:gap-4">
+        <div className="relative w-full max-w-xs md:max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Search..." className="pl-9" />
         </div>
@@ -68,3 +68,5 @@ export default function AdminHeader() {
     </header>
   );
 }
+
+    
