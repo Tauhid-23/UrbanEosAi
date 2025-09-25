@@ -1,4 +1,5 @@
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import UserTable from './components/UserTable';
 
 export default function AdminUsersPage() {
   return (
@@ -6,11 +7,12 @@ export default function AdminUsersPage() {
       <Card>
         <CardHeader>
           <CardTitle>User Management</CardTitle>
+           <CardDescription>
+            A table of all registered users with management actions.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            A table of all registered users with management actions (edit role, suspend, delete) will be displayed here soon.
-          </p>
+          <UserTable />
         </CardContent>
       </Card>
     </div>
