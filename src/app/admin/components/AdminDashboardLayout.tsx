@@ -2,8 +2,7 @@
 'use client';
 
 import * as React from 'react';
-import { usePathname } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   SidebarProvider,
   Sidebar,
@@ -29,9 +28,10 @@ import {
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
 import AdminHeader from './AdminHeader';
-import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import Loading from '@/app/loading';
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -54,11 +54,23 @@ export default function AdminDashboardLayout({
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  React.useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+
   if (loading) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>;
+    return <Loading />;
   }
 
-  if (!user?.isAdmin) {
+  if (!user) {
+    // This state is brief before the redirect, but good to have
+    return null;
+  }
+  
+  if (!user.isAdmin) {
     return (
        <div className="container mx-auto flex h-screen flex-col items-center justify-center p-4">
          <Card className="w-full max-w-md">
