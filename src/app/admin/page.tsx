@@ -12,15 +12,18 @@ import CreateBlogPostForm from './components/CreateBlogPostForm';
 import CreateProductForm from './components/CreateProductForm';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useEffect, useState } from 'react';
-import { collection, getCountFromServer } from 'firebase/firestore';
+import { collection, getCountFromServer, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { ContactMessage } from '@/lib/types';
+import { formatDistanceToNow } from 'date-fns';
 
 export default function AdminDashboardPage() {
   const [userCount, setUserCount] = useState(0);
-  const [plantCount, setPlantCount] = useState(0);
+  const [plantCount, setPlantCount] =useState(0);
   const [orderCount, setOrderCount] = useState(0);
   const [blogPostCount, setBlogPostCount] = useState(0);
+  const [recentMessages, setRecentMessages] = useState<ContactMessage[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,29 +34,36 @@ export default function AdminDashboardPage() {
         const plantsCol = collection(db, 'plants');
         const ordersCol = collection(db, 'orders');
         const blogPostsCol = collection(db, 'blogPosts');
+        const messagesQuery = query(collection(db, 'contactMessages'), orderBy('createdAt', 'desc'), limit(5));
 
         const [
           usersSnapshot,
           plantsSnapshot,
           ordersSnapshot,
           blogPostsSnapshot,
+          messagesSnapshot,
         ] = await Promise.all([
           getCountFromServer(usersCol),
           getCountFromServer(plantsCol),
           getCountFromServer(ordersCol),
           getCountFromServer(blogPostsCol),
+          getDocs(messagesQuery),
         ]);
 
         setUserCount(usersSnapshot.data().count);
-        // Note: The prompt mentions /plants but the schema has /plants/{plantId}.
-        // The collection name is likely 'plants'. Same for orders and blogPosts.
-        // Assuming top-level collections for now based on the prompt.
         setPlantCount(plantsSnapshot.data().count);
         setOrderCount(ordersSnapshot.data().count);
         setBlogPostCount(blogPostsSnapshot.data().count);
+        
+        const messages = messagesSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt.toDate(),
+        })) as ContactMessage[];
+        setRecentMessages(messages);
 
       } catch (error) {
-        console.error("Error fetching admin dashboard counts:", error);
+        console.error("Error fetching admin dashboard data:", error);
       } finally {
         setLoading(false);
       }
@@ -114,7 +124,29 @@ export default function AdminDashboardPage() {
               <CardTitle>Recent Contact Messages</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">No messages yet.</p>
+              {loading ? (
+                 <div className="space-y-4">
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                    <Skeleton className="h-10 w-full" />
+                </div>
+              ) : recentMessages.length > 0 ? (
+                <ul className="space-y-4">
+                  {recentMessages.map(msg => (
+                    <li key={msg.id} className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold">{msg.name} <span className="text-sm text-muted-foreground">({msg.email})</span></p>
+                        <p className="text-sm text-muted-foreground truncate">{msg.message}</p>
+                      </div>
+                      <p className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatDistanceToNow(msg.createdAt, { addSuffix: true })}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted-foreground">No messages yet.</p>
+              )}
             </CardContent>
           </Card>
           <Card>

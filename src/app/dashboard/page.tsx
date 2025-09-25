@@ -275,6 +275,7 @@ function DashboardPage() {
       // Add as a new plant
       const newPlant = {
         id: `plant-${Date.now()}`,
+        species: result.plantType,
         ...newPlantData,
       };
       setPlantGrowth(prev => [...prev, newPlant]);
@@ -359,6 +360,7 @@ function DashboardPage() {
       id: `plant-${Date.now()}`,
       icon: <Sprout className="h-8 w-8 text-primary" />,
       name: newPlantName,
+      species: newPlantSpecies,
       stage: 'Seedling',
       progress: 5,
       days: '1 day',
@@ -453,7 +455,7 @@ function DashboardPage() {
                                   <p className="font-semibold">
                                     {plant.name}{' '}
                                     <span className="text-xs text-muted-foreground font-normal">
-                                      ({plant.stage})
+                                      ({plant.species})
                                     </span>
                                   </p>
                                   <p className="text-xs text-muted-foreground">

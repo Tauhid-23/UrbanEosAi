@@ -49,3 +49,12 @@ export type Feature = {
   description: string;
   icon: string;
 };
+
+export type ContactMessage = {
+    id: string;
+    name: string;
+    email: string;
+    message: string;
+    createdAt: Date;
+    status: 'new' | 'replied';
+};
