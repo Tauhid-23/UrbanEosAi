@@ -17,24 +17,14 @@ import { Button } from '@/components/ui/button';
 import {
   collection,
   getDocs,
-  addDoc,
-  deleteDoc,
+  runTransaction,
   doc,
   serverTimestamp,
-  runTransaction,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { blogPosts, products } from '@/lib/data';
 import CreateBlogPostForm from './components/CreateBlogPostForm';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import CreateProductForm from './components/CreateProductForm';
 
 function AdminPage() {
@@ -46,7 +36,7 @@ function AdminPage() {
   useEffect(() => {
     // This check happens after withAuth has already confirmed a user exists.
     // We add this for role-based security on the client-side.
-    if (user && !user.isAdmin) {
+    if (user && user.role !== 'admin') {
       toast({
         variant: 'destructive',
         title: 'Access Denied',
@@ -109,7 +99,7 @@ function AdminPage() {
   };
 
   // Render a loading state or null if the user is not an admin
-  if (!user || !user.isAdmin) {
+  if (!user || user.role !== 'admin') {
     return (
       <div className="container mx-auto flex h-full items-center justify-center p-4">
         <p>Verifying permissions...</p>
@@ -126,11 +116,25 @@ function AdminPage() {
         </p>
       </header>
 
-      <Tabs defaultValue="content">
-        <TabsList className="mb-4">
+      <Tabs defaultValue="overview">
+        <TabsList className="mb-4 grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="content">Content Management</TabsTrigger>
           <TabsTrigger value="database">Database</TabsTrigger>
         </TabsList>
+        <TabsContent value="overview">
+           <Card>
+              <CardHeader>
+                <CardTitle>Welcome, {user.displayName}!</CardTitle>
+                <CardDescription>
+                  Here's a quick look at your application's status.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p>Overview of users, plants, orders, and revenue will be displayed here in the next step.</p>
+              </CardContent>
+            </Card>
+        </TabsContent>
         <TabsContent value="content">
           <div className="grid gap-8 md:grid-cols-2">
             <Card>

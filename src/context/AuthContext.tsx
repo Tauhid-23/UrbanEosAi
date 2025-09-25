@@ -8,7 +8,7 @@ import { auth, db } from '@/lib/firebase';
 
 // Define an extended User type to include our custom fields
 export interface AppUser extends User {
-  isAdmin?: boolean;
+  role?: 'user' | 'admin';
   subscriptionPlan?: 'free' | 'pro' | 'premium';
 }
 
@@ -68,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             name: displayName,
             profileImage: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
             subscriptionPlan: 'free',
-            isAdmin: false, // Default to not being an admin
+            role: 'user', // Default to user role
             createdAt: serverTimestamp(),
             lastLogin: serverTimestamp(),
         });
@@ -93,6 +93,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const userDocRef = doc(db, 'users', userCredential.user.uid);
     await setDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
+    // Fetch and set custom user data on sign-in
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      setUser({ ...userCredential.user, ...userDoc.data() } as AppUser);
+    }
     return userCredential;
   };
   

@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -71,7 +72,7 @@ export function Header() {
   );
 
   const filteredNavLinks = navLinks.filter(link => {
-    if (link.admin) return user?.isAdmin;
+    if (link.admin) return user?.role === 'admin';
     if (link.auth) return !!user;
     return true;
   });
@@ -128,7 +129,7 @@ export function Header() {
           </Button>
           {user ? (
             <>
-              {user.isAdmin && (
+              {user.role === 'admin' && (
                 <Button variant="ghost" size="icon" asChild>
                     <Link href="/admin">
                         <Shield />

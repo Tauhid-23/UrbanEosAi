@@ -28,9 +28,10 @@
           "enum": ["free", "pro", "premium"],
           "description": "The user's current subscription plan."
         },
-        "isAdmin": {
-            "type": "boolean",
-            "description": "Whether the user has administrative privileges."
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"],
+          "description": "The user's role in the system."
         },
         "createdAt": {
           "type": "string",
@@ -43,7 +44,7 @@
           "description": "The timestamp of the user's last login."
         }
       },
-      "required": ["uid", "name", "email", "subscriptionPlan", "isAdmin", "createdAt"]
+      "required": ["uid", "name", "email", "subscriptionPlan", "role", "createdAt"]
     },
     "Plant": {
       "title": "Plant",
@@ -253,6 +254,40 @@
         "endDate": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "plan", "status", "startDate"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Records administrative actions performed in the system.",
+      "type": "object",
+      "properties": {
+        "adminId": {
+          "type": "string",
+          "description": "The UID of the admin who performed the action."
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "deletedUser",
+            "updatedProduct",
+            "approvedOrder",
+            "repliedContact",
+            "updatedBlog",
+            "promotedUser",
+            "demotedUser"
+          ],
+          "description": "The type of action performed."
+        },
+        "targetId": {
+          "type": "string",
+          "description": "The ID of the document/entity that was affected."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp of the audit log entry."
+        }
+      },
+      "required": ["adminId", "action", "targetId", "timestamp"]
     }
   },
   "auth": {
@@ -306,6 +341,10 @@
     "/subscriptions/{subId}": {
       "schema": { "$ref": "#/entities/Subscription" },
       "description": "Collection of all user subscriptions."
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Collection of all admin audit log entries."
     }
   }
 }
