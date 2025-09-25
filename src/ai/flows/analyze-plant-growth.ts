@@ -39,7 +39,7 @@ const AnalyzePlantGrowthOutputSchema = z.object({
     .max(100)
     .describe('The calculated health score of the plant, from 0 to 100.'),
 });
-export type AnalyzePlantGrowthOutput = z_infer<
+export type AnalyzePlantGrowthOutput = z.infer<
   typeof AnalyzePlantGrowthOutputSchema
 >;
 
