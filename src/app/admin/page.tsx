@@ -34,8 +34,6 @@ function AdminPage() {
   const [isSeeding, setIsSeeding] = useState(false);
 
   useEffect(() => {
-    // This check happens after withAuth has already confirmed a user exists.
-    // We add this for role-based security on the client-side.
     if (user && user.role !== 'admin') {
       toast({
         variant: 'destructive',
@@ -54,9 +52,7 @@ function AdminPage() {
     });
 
     try {
-      // Use a transaction to ensure atomicity
       await runTransaction(db, async (transaction) => {
-        // Seed Blog Posts
         const blogPostsCollection = collection(db, 'blogPosts');
         const blogSnapshot = await getDocs(blogPostsCollection);
         if (blogSnapshot.empty) {
@@ -70,7 +66,6 @@ function AdminPage() {
           }
         }
 
-        // Seed Products
         const productsCollection = collection(db, 'products');
         const productsSnapshot = await getDocs(productsCollection);
         if (productsSnapshot.empty) {
@@ -98,7 +93,6 @@ function AdminPage() {
     }
   };
 
-  // Render a loading state or null if the user is not an admin
   if (!user || user.role !== 'admin') {
     return (
       <div className="container mx-auto flex h-full flex-col items-center justify-center p-4">
@@ -144,7 +138,7 @@ function AdminPage() {
                 <CardDescription>
                   Fill out the form to add a new article to your blog.
                 </CardDescription>
-              </Header>
+              </CardHeader>
               <CardContent>
                 <CreateBlogPostForm />
               </CardContent>
@@ -155,7 +149,7 @@ function AdminPage() {
                 <CardDescription>
                   Add a new item to your marketplace.
                 </CardDescription>
-              </Header>
+              </CardHeader>
               <CardContent>
                 <CreateProductForm />
               </CardContent>
