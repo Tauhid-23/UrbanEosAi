@@ -82,7 +82,7 @@ function AdminPage() {
     }
   };
 
-  if (!user || user.role !== 'admin') {
+  if (!user || !user.isAdmin) {
     return (
       <div className="container mx-auto flex h-full flex-col items-center justify-center p-4">
          <Card className="w-full max-w-md">

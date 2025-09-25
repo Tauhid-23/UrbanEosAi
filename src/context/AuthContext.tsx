@@ -8,7 +8,7 @@ import { auth, db } from '@/lib/firebase';
 
 // Define an extended User type to include our custom fields
 export interface AppUser extends User {
-  role: 'user' | 'admin';
+  isAdmin: boolean;
   subscriptionPlan: 'free' | 'pro' | 'premium';
 }
 
@@ -48,18 +48,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: firebaseUser.email,
         displayName: firebaseUser.displayName,
         photoURL: firebaseUser.photoURL,
-        role: customData.role || 'user',
+        isAdmin: customData.isAdmin || false,
         subscriptionPlan: customData.subscriptionPlan || 'free',
       } as AppUser;
     } else {
-      // If no profile exists, create one with default 'user' role
+      // If no profile exists, create one with default user role
       const userProfileData = {
         uid: firebaseUser.uid,
         name: firebaseUser.displayName || 'New User',
         email: firebaseUser.email,
         profileImage: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
         subscriptionPlan: 'free' as const,
-        role: 'user' as const, // Default role
+        isAdmin: false, // Default role
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp(),
       };
@@ -104,7 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email: firebaseUser.email,
         profileImage: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
         subscriptionPlan: 'free' as const,
-        role: 'user' as const, // Explicitly set role on creation
+        isAdmin: false, // Explicitly set role on creation
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp(),
     };

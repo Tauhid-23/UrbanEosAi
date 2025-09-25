@@ -77,7 +77,7 @@ export function Header() {
   const getFilteredNavLinks = () => {
     let links = [...navLinks];
     // Add admin links only if the user is an admin
-    if (user?.role === 'admin') {
+    if (user?.isAdmin) {
       // Use unshift to add to the beginning of the nav for better visibility
       links.splice(1, 0, ...adminNavLinks);
     }
@@ -139,7 +139,7 @@ export function Header() {
           </Button>
           {user ? (
             <>
-              {user.role === 'admin' && (
+              {user.isAdmin && (
                 <Button variant="ghost" size="icon" asChild>
                     <Link href="/admin">
                         <Shield />
