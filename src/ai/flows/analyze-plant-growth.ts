@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -11,7 +12,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
-export const AnalyzePlantGrowthInputSchema = z.object({
+const AnalyzePlantGrowthInputSchema = z.object({
   photoDataUri: z
     .string()
     .describe(
@@ -22,7 +23,7 @@ export type AnalyzePlantGrowthInput = z.infer<
   typeof AnalyzePlantGrowthInputSchema
 >;
 
-export const AnalyzePlantGrowthOutputSchema = z.object({
+const AnalyzePlantGrowthOutputSchema = z.object({
   plantType: z.string().describe('The identified type or species of the plant.'),
   growthStage: z
     .enum(['seedling', 'vegetative', 'flowering', 'harvest-ready'])
@@ -38,7 +39,7 @@ export const AnalyzePlantGrowthOutputSchema = z.object({
     .max(100)
     .describe('The calculated health score of the plant, from 0 to 100.'),
 });
-export type AnalyzePlantGrowthOutput = z.infer<
+export type AnalyzePlantGrowthOutput = z_infer<
   typeof AnalyzePlantGrowthOutputSchema
 >;
 
