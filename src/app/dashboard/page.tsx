@@ -49,13 +49,12 @@ import {
   Droplets,
   Sun,
   Thermometer,
-  Video,
   VideoOff,
   AlertCircle,
-  LogOut,
-  Flower,
   Loader2,
   Sparkles,
+  Flower,
+  BookOpen,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -66,6 +65,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Bar,
 } from 'recharts';
 import withAuth from '@/components/withAuth';
 import { useAuth } from '@/context/AuthContext';
@@ -83,47 +83,35 @@ const generateWeeksData = () => {
   return data;
 };
 
+const emptyGrowthData = [
+    { name: 'Day 1', "Growth %": 0 },
+    { name: 'Day 2', "Growth %": 0 },
+    { name: 'Day 3', "Growth %": 0 },
+    { name: 'Day 4', "Growth %": 0 },
+    { name: 'Day 5', "Growth %": 0 },
+];
+
 const aiRecommendations = [
   {
     text: 'Water your tomatoes',
     subtext: 'Soil moisture is getting low',
     color: 'bg-blue-100 dark:bg-blue-900/30 border-blue-400',
+    icon: <Droplets className="h-5 w-5 text-blue-500" />,
   },
   {
     text: 'Harvest basil leaves',
     subtext: 'Perfect time for maximum flavor',
     color: 'bg-green-100 dark:bg-green-900/30 border-green-400',
+    icon: <Sprout className="h-5 w-5 text-green-500" />,
   },
   {
     text: 'Add fertilizer to peppers',
     subtext: 'Boost growth with organic nutrients',
     color: 'bg-orange-100 dark:bg-orange-900/30 border-orange-400',
+    icon: <Flower className="h-5 w-5 text-orange-500" />,
   },
 ];
 
-const quickActions = [
-  {
-    icon: <Calendar className="h-5 w-5" />,
-    text: 'Schedule Watering',
-    action: 'schedule',
-  },
-  {
-    icon: <BarChart className="h-5 w-5" />,
-    text: 'View Analytics',
-    action: 'analytics',
-  },
-  {
-    icon: <Settings className="h-5 w-5" />,
-    text: 'Garden Settings',
-    action: 'settings',
-  },
-];
-
-const goals = [
-  { name: 'Plants Added', progress: 66, value: '2/3' },
-  { name: 'Harvests', progress: 62.5, value: '5/8' },
-  { name: 'Care Sessions', progress: 80, value: '12/15' },
-];
 
 function DashboardPage() {
   const { user } = useAuth();
@@ -145,33 +133,46 @@ function DashboardPage() {
 
   const overviewItems = useMemo(() => {
     const harvestReadyCount = plantGrowth.filter(p => p.progress > 85).length;
+    const avgGrowth = plantGrowth.length > 0 ? Math.round(plantGrowth.reduce((acc, p) => acc + p.progress, 0) / plantGrowth.length) : 0;
+    const healthScoreValue = plantGrowth.length > 0 ? 92 : 0; // Example static health score when plants exist
+    
     return [
       {
-        icon: <Leaf className="h-6 w-6 text-primary" />,
+        icon: <Leaf className="h-6 w-6 text-green-500" />,
         title: 'Active Plants',
         value: plantGrowth.length.toString(),
-        change: '',
+        progress: plantGrowth.length > 0 ? (plantGrowth.length / 5) * 100 : 0, // Example goal of 5 plants
+        color: 'text-green-500',
       },
       {
-        icon: <TrendingUp className="h-6 w-6 text-primary" />,
+        icon: <TrendingUp className="h-6 w-6 text-blue-500" />,
         title: 'Avg. Growth',
-        value: plantGrowth.length > 0 ? `${Math.round(plantGrowth.reduce((acc, p) => acc + p.progress, 0) / plantGrowth.length)}%` : 'N/A',
-        change: '',
+        value: `${avgGrowth}%`,
+        progress: avgGrowth,
+        color: 'text-blue-500',
       },
       {
-        icon: <ClipboardList className="h-6 w-6 text-primary" />,
+        icon: <ClipboardList className="h-6 w-6 text-yellow-500" />,
         title: 'Harvest Ready',
         value: harvestReadyCount.toString(),
-        change: '',
+        progress: harvestReadyCount > 0 ? (harvestReadyCount / plantGrowth.length) * 100 : 0,
+        color: 'text-yellow-500',
       },
       {
-        icon: <BarChart className="h-6 w-6 text-primary" />,
+        icon: <BarChart className="h-6 w-6 text-red-500" />,
         title: 'Health Score',
-        value: plantGrowth.length > 0 ? 'Excellent' : 'N/A',
-        change: plantGrowth.length > 0 ? 'All systems green' : 'Add plants to see score',
+        value: plantGrowth.length > 0 ? `${healthScoreValue}/100` : 'N/A',
+        progress: healthScoreValue,
+        color: 'text-red-500',
       },
     ]
   }, [plantGrowth]);
+
+   const goals = useMemo(() => [
+    { name: 'Add 1 Plant 🌱', progress: plantGrowth.length > 0 ? 100 : 0, value: `${Math.min(1, plantGrowth.length)}/1` },
+    { name: 'Water plants 5 times 💧', progress: 0, value: '0/5' },
+    { name: 'Harvest 1 plant 🥬', progress: 0, value: '0/1' },
+  ], [plantGrowth]);
 
 
   useEffect(() => {
@@ -231,9 +232,8 @@ function DashboardPage() {
     }
   }, [isScanMode, toast]);
 
-  const handleQuickAction = (action: string, analysisType: 'disease' | 'growth' = 'disease') => {
+  const handleQuickAction = (action: string) => {
     if (action === 'Start Scan') {
-        // Here you can differentiate if needed, for now it opens the same scanner
         setScanMode(true);
     } else {
         toast({
@@ -387,38 +387,56 @@ function DashboardPage() {
             </p>
           </header>
 
-          {plantGrowth.length > 0 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {overviewItems.map((item) => (
-                <Card key={item.title}>
-                  <CardContent className="p-6 flex items-center gap-4">
-                    <div className="bg-primary/10 p-3 rounded-lg">{item.icon}</div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">{item.title}</p>
-                      <p className="text-2xl font-bold">{item.value}</p>
-                      <p className="text-xs text-muted-foreground">{item.change}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {overviewItems.map((item) => (
+                <Card key={item.title} className="p-6 flex flex-col justify-between">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className={`bg-primary/10 p-3 rounded-lg ${item.color}`}>
+                            {item.icon}
+                        </div>
+                        <div className="relative h-12 w-12">
+                            <svg className="w-full h-full" viewBox="0 0 36 36">
+                                <path
+                                className="text-secondary/50 stroke-current"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                strokeWidth="3"
+                                ></path>
+                                <path
+                                className={`${item.color} stroke-current`}
+                                strokeDasharray={`${item.progress}, 100`}
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                strokeLinecap="round"
+                                strokeWidth="3"
+                                ></path>
+                            </svg>
+                             <span className="absolute inset-0 flex items-center justify-center text-xs font-bold">{item.progress.toFixed(0)}%</span>
+                        </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                    <div>
+                        <p className="text-2xl font-bold">{item.value}</p>
+                        <p className="text-sm text-muted-foreground">{item.title}</p>
+                    </div>
+              </Card>
+            ))}
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
-              <Card>
+                <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <div>
+                    <div>
                     <CardTitle className="font-headline">
-                      Plant Growth Tracker
+                        Plant Growth Tracker
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Monitor your plants' development and health.
+                        Monitor your plants' development and health.
                     </p>
-                  </div>
-                  <Button variant="outline" onClick={() => setAddPlantOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" /> Add Plant
-                  </Button>
+                    </div>
+                    <Button variant="outline" onClick={() => setAddPlantOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" /> Add Plant
+                    </Button>
                 </CardHeader>
                 <CardContent>
                   {plantGrowth.length > 0 ? (
@@ -495,17 +513,35 @@ function DashboardPage() {
                       ))}
                     </Accordion>
                   ) : (
-                    <div className="text-center py-12 px-4 border-2 border-dashed rounded-lg">
-                      <Flower className="mx-auto h-12 w-12 text-muted-foreground" />
-                      <h3 className="mt-4 text-lg font-medium text-foreground">
-                        Your garden is empty
-                      </h3>
-                      <p className="mt-1 text-sm text-muted-foreground">
+                    <div className="text-center py-12 px-4 border-2 border-dashed rounded-lg flex flex-col items-center">
+                         <div className="relative h-32 w-32 mb-4">
+                            <svg className="w-full h-full" viewBox="0 0 36 36">
+                                <path
+                                className="text-secondary stroke-current"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                strokeWidth="3"
+                                ></path>
+                                <path
+                                className="text-primary stroke-current"
+                                strokeDasharray="0, 100"
+                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                fill="none"
+                                strokeLinecap="round"
+                                strokeWidth="3"
+                                ></path>
+                            </svg>
+                            <span className="absolute inset-0 flex items-center justify-center text-3xl font-bold text-primary">0%</span>
+                        </div>
+                        <h3 className="mt-2 text-lg font-medium text-foreground">
+                            Your Garden is Ready to Grow
+                        </h3>
+                        <p className="mt-1 text-sm text-muted-foreground">
                         Add your first plant to start tracking its growth.
-                      </p>
-                      <Button className="mt-6" onClick={() => setAddPlantOpen(true)}>
+                        </p>
+                        <Button className="mt-6" onClick={() => setAddPlantOpen(true)}>
                         <Plus className="mr-2 h-4 w-4" /> Add Plant
-                      </Button>
+                        </Button>
                     </div>
                   )}
                 </CardContent>
@@ -513,64 +549,74 @@ function DashboardPage() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-headline flex items-center gap-2">
-                    <Camera className="h-6 w-6 text-primary" /> AI Disease
-                    Detection
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Scan your plants for health issues
-                  </p>
+                  <CardTitle className="font-headline">Plant Growth Trend</CardTitle>
                 </CardHeader>
-                <CardContent className="text-center">
-                  <div className="bg-secondary/50 p-8 rounded-lg flex flex-col items-center">
-                    <Camera className="h-16 w-16 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold">Identify Plant Diseases</h3>
-                    <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
-                      Take a photo or upload an image to instantly identify diseases and get treatment
-                      recommendations.
-                    </p>
-                    <div className="flex gap-4">
-                      <Button onClick={() => handleQuickAction('Start Scan')}>
-                        <Camera className="mr-2 h-4 w-4" /> Start Scan
-                      </Button>
-                      <Button variant="outline" asChild>
-                         <Label htmlFor="upload-image-disease" className="cursor-pointer">
-                            <Upload className="mr-2 h-4 w-4" /> Upload Image
-                            <Input id="upload-image-disease" type="file" className="sr-only" accept="image/*" onChange={(e) => toast({ title: 'Image Uploaded', description: 'Ready for disease analysis.' })} />
-                         </Label>
-                      </Button>
+                <CardContent>
+                    <div className="h-48 w-full">
+                        <ResponsiveContainer>
+                            <LineChart data={emptyGrowthData}>
+                                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border) / 0.5)" />
+                                <XAxis dataKey="name" tick={{fontSize: 12}} />
+                                <YAxis dataKey="Growth %" tick={{fontSize: 12}} />
+                                <Tooltip contentStyle={{backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))'}}/>
+                                <Line type="monotone" dataKey="Growth %" stroke="hsl(var(--primary))" strokeWidth={2} dot={{ fill: 'hsl(var(--primary))' }} />
+                            </LineChart>
+                        </ResponsiveContainer>
                     </div>
-                  </div>
                 </CardContent>
               </Card>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline flex items-center gap-2">
+                        <Camera className="h-6 w-6 text-primary" /> AI Disease Detection
+                        </CardTitle>
+                        <CardDescription>
+                        Scan your plants for health issues.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="p-4 rounded-lg bg-secondary/50 flex flex-col items-center text-center">
+                             <div className="h-24 w-full flex items-center justify-center opacity-30">
+                                <BarChart className="h-16 w-16 text-muted-foreground" />
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-4">No scans yet.</p>
+                             <div className="flex gap-4">
+                                <Button onClick={() => handleQuickAction('Start Scan')}>
+                                    <Camera className="mr-2 h-4 w-4" /> Scan
+                                </Button>
+                                <Button variant="outline" asChild>
+                                    <Label htmlFor="upload-image-disease" className="cursor-pointer">
+                                        <Upload className="mr-2 h-4 w-4" /> Upload
+                                        <Input id="upload-image-disease" type="file" className="sr-only" accept="image/*" onChange={(e) => toast({ title: 'Image Uploaded', description: 'Ready for disease analysis.' })} />
+                                    </Label>
+                                </Button>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <Card>
                     <CardHeader>
                         <CardTitle className="font-headline flex items-center gap-2">
-                        <Sparkles className="h-6 w-6 text-primary" /> AI Plant Growth Analysis
+                        <Sparkles className="h-6 w-6 text-primary" /> AI Growth Analysis
                         </CardTitle>
                         <CardDescription>
-                        Get a detailed analysis of your plant's growth stage and health.
+                        Get insights on your plant's progress.
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                        <div className="bg-secondary/50 p-8 rounded-lg flex flex-col items-center text-center">
-                        <Sprout className="h-16 w-16 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-semibold">Analyze Plant Growth</h3>
-                        <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
-                            Upload a photo to get AI-powered insights on your plant&apos;s progress and health.
-                        </p>
-                        <div className="flex gap-4">
-                            <Button onClick={() => handleQuickAction('Start Scan', 'growth')}>
-                            <Camera className="mr-2 h-4 w-4" /> Start Scan
+                         <div className="flex gap-4">
+                            <Button className="w-full" onClick={() => handleQuickAction('Start Scan')}>
+                                <Camera className="mr-2 h-4 w-4" /> Start Scan
                             </Button>
-                            <Button variant="outline" asChild>
-                            <Label htmlFor="upload-image-growth" className="cursor-pointer">
-                                <Upload className="mr-2 h-4 w-4" /> Upload Image
-                                <Input id="upload-image-growth" type="file" className="sr-only" accept="image/*" onChange={handleFileSelect} />
-                            </Label>
+                            <Button variant="outline" className="w-full" asChild>
+                                <Label htmlFor="upload-image-growth" className="cursor-pointer">
+                                    <Upload className="mr-2 h-4 w-4" /> Upload Image
+                                    <Input id="upload-image-growth" type="file" className="sr-only" accept="image/*" onChange={handleFileSelect} />
+                                </Label>
                             </Button>
-                        </div>
                         </div>
                         {isAnalyzing && (
                             <div className="flex items-center justify-center gap-2 text-muted-foreground">
@@ -593,87 +639,83 @@ function DashboardPage() {
                         )}
                     </CardContent>
                 </Card>
-
+              </div>
             </div>
             <div className="space-y-8">
-             {plantGrowth.length > 0 && (
-              <>
-                <Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline flex items-center gap-2">
+                    <Target className="h-6 w-6 text-yellow-500" /> This Month's Goals
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {goals.map((goal) => (
+                    <div key={goal.name}>
+                        <div className="flex justify-between items-center text-sm mb-1">
+                        <p className="font-medium">{goal.name}</p>
+                        <p className="text-muted-foreground">
+                            {goal.value}
+                        </p>
+                        </div>
+                        <Progress value={goal.progress} className="h-2 [&>div]:bg-yellow-400" />
+                    </div>
+                    ))}
+                </CardContent>
+                </Card>
+             <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline flex items-center gap-2">
+                    <Bot className="h-6 w-6 text-primary" /> AI
+                    Recommendations
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {aiRecommendations.map((rec) => (
+                    <div
+                        key={rec.text}
+                        className={`p-3 rounded-lg border-l-4 flex items-center gap-3 ${rec.color}`}
+                    >
+                        {rec.icon}
+                        <div>
+                            <p className="font-semibold">{rec.text}</p>
+                            <p className="text-sm text-muted-foreground">
+                            {rec.subtext}
+                            </p>
+                        </div>
+                    </div>
+                    ))}
+                </CardContent>
+                </Card>
+                 <Card>
                   <CardHeader>
                     <CardTitle className="font-headline flex items-center gap-2">
-                      <Bot className="h-6 w-6 text-primary" /> AI
-                      Recommendations
+                     <BookOpen className="h-6 w-6" /> Quick Actions
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {aiRecommendations.map((rec) => (
-                        <div
-                          key={rec.text}
-                          className={`p-4 rounded-lg border-l-4 ${rec.color}`}
-                        >
-                          <p className="font-semibold">{rec.text}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {rec.subtext}
-                          </p>
-                        </div>
-                      ))}
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="font-headline">
-                      Quick Actions
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {quickActions.map((action) => (
                       <Button
-                        key={action.text}
                         variant="outline"
                         className="w-full justify-start gap-2"
-                        onClick={() => toast({ title: 'Quick Action', description: `${action.text} triggered.`})}
+                        onClick={() => toast({ title: 'Quick Action', description: 'Calendar triggered.'})}
                       >
-                        {action.icon}
-                        {action.text}
+                        <Calendar className="h-5 w-5" /> Schedule Watering
                       </Button>
-                    ))}
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2"
+                        onClick={() => toast({ title: 'Quick Action', description: 'Analytics triggered.'})}
+                      >
+                        <BarChart className="h-5 w-5" /> View Analytics
+                      </Button>
+                       <Button
+                        variant="outline"
+                        className="w-full justify-start gap-2"
+                        onClick={() => toast({ title: 'Quick Action', description: 'Settings triggered.'})}
+                      >
+                        <Settings className="h-5 w-5" /> Garden Settings
+                      </Button>
                   </CardContent>
                 </Card>
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="font-headline flex items-center gap-2">
-                      <Target className="h-6 w-6 text-primary" /> This
-                      Month's Goals
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                      {goals.map((goal) => (
-                        <div key={goal.name}>
-                          <div className="flex justify-between items-center text-sm mb-1">
-                            <p className="font-medium">{goal.name}</p>
-                            <p className="text-muted-foreground">
-                              {goal.value}
-                            </p>
-                          </div>
-                          <Progress value={goal.progress} />
-                        </div>
-                      ))}
-                  </CardContent>
-                </Card>
-              </>
-              )}
-               {plantGrowth.length === 0 && (
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="font-headline">Your Dashboard</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-muted-foreground">
-                            Add a plant or use the AI analysis tools to get started. Your recommendations and goals will appear here.
-                        </p>
-                    </CardContent>
-                </Card>
-               )}
             </div>
           </div>
         </div>
@@ -721,7 +763,7 @@ function DashboardPage() {
         </DialogContent>
       </Dialog>
       <Dialog open={isScanMode} onOpenChange={setScanMode}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-w-md w-full">
             <DialogHeader>
                 <DialogTitle>Scan Plant</DialogTitle>
                 <DialogDescription>
@@ -764,6 +806,3 @@ function DashboardPage() {
 }
 
 export default withAuth(DashboardPage);
-
-    
-
