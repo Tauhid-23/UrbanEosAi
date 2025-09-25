@@ -24,7 +24,10 @@ const navLinks = [
   { href: '/marketplace', label: 'Marketplace' },
   { href: '/resources', label: 'Resources' },
   { href: '/contact', label: 'Contact' },
-  { href: '/admin', label: 'Admin', auth: true, admin: true },
+];
+
+const adminNavLinks = [
+    { href: '/admin', label: 'Admin', auth: true, admin: true }
 ];
 
 export function Header() {
@@ -71,11 +74,15 @@ export function Header() {
     </Link>
   );
 
-  const filteredNavLinks = navLinks.filter(link => {
-    if (link.admin) return user?.role === 'admin';
-    if (link.auth) return !!user;
-    return true;
-  });
+  const getFilteredNavLinks = () => {
+    let links = [...navLinks];
+    if (user?.role === 'admin') {
+      links.push(...adminNavLinks);
+    }
+    return links.filter(link => !link.auth || !!user);
+  };
+  
+  const filteredNavLinks = getFilteredNavLinks();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -115,7 +122,7 @@ export function Header() {
           </div>
           <nav className="hidden md:flex items-center space-x-6">
             {filteredNavLinks.map((link) => (
-              <NavLink key={link.href} {...link} />
+              !link.admin && <NavLink key={link.href} {...link} />
             ))}
           </nav>
         </div>
