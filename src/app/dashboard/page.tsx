@@ -54,6 +54,8 @@ import {
   AlertCircle,
   LogOut,
   Flower,
+  Loader2,
+  Sparkles,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -67,6 +69,7 @@ import {
 } from 'recharts';
 import withAuth from '@/components/withAuth';
 import { useAuth } from '@/context/AuthContext';
+import { analyzePlantGrowth, AnalyzePlantGrowthOutput } from '@/ai/flows/analyze-plant-growth';
 
 const generateWeeksData = () => {
   const data = [];
@@ -131,6 +134,9 @@ function DashboardPage() {
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [activeAccordionItem, setActiveAccordionItem] = useState<string[]>([]);
+
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalyzePlantGrowthOutput | null>(null);
 
   useEffect(() => {
     // Simulate fetching user's plant data
@@ -225,14 +231,112 @@ function DashboardPage() {
     }
   }, [isScanMode, toast]);
 
-  const handleQuickAction = (action: string) => {
+  const handleQuickAction = (action: string, analysisType: 'disease' | 'growth' = 'disease') => {
     if (action === 'Start Scan') {
+        // Here you can differentiate if needed, for now it opens the same scanner
         setScanMode(true);
     } else {
         toast({
             title: 'Action Triggered',
             description: `You clicked on "${action}". In a real app, this would perform the action.`,
         });
+    }
+  };
+
+  const addOrUpdatePlantFromAnalysis = (result: AnalyzePlantGrowthOutput) => {
+    const existingPlantIndex = plantGrowth.findIndex(p => p.name.toLowerCase() === result.plantType.toLowerCase());
+
+    const newPlantData = {
+      name: result.plantType,
+      stage: result.growthStage.charAt(0).toUpperCase() + result.growthStage.slice(1),
+      progress: result.growthProgress,
+      healthData: generateWeeksData(), // generate new historical data
+      vitals: { water: 'Optimal', light: 'Optimal', temp: `${result.healthScore}/100` },
+      icon: <Sprout className="h-8 w-8 text-primary" />,
+      days: 'Just updated',
+    };
+    
+    if (existingPlantIndex > -1) {
+      // Update existing plant
+      setPlantGrowth(prev => {
+        const newPlants = [...prev];
+        const plantToUpdate = newPlants[existingPlantIndex];
+        newPlants[existingPlantIndex] = { ...plantToUpdate, ...newPlantData, id: plantToUpdate.id };
+        return newPlants;
+      });
+      toast({
+        title: 'Plant Updated!',
+        description: `${result.plantType} has been updated with the new analysis.`,
+      });
+      // Expand the updated plant's accordion
+      setActiveAccordionItem(prev => [...new Set([...prev, plantGrowth[existingPlantIndex].id])]);
+
+    } else {
+      // Add as a new plant
+      const newPlant = {
+        id: `plant-${Date.now()}`,
+        ...newPlantData,
+      };
+      setPlantGrowth(prev => [...prev, newPlant]);
+      toast({
+        title: 'New Plant Analyzed & Added!',
+        description: `${result.plantType} has been added to your tracker.`,
+      });
+      // Expand the new plant's accordion
+       setActiveAccordionItem(prev => [...new Set([...prev, newPlant.id])]);
+    }
+  };
+
+
+  const handleImageAnalysis = async (dataUri: string) => {
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+    toast({
+      title: 'Analyzing Plant...',
+      description: 'The AI is inspecting your plant, please wait.',
+    });
+    try {
+      const result = await analyzePlantGrowth({ photoDataUri: dataUri });
+      setAnalysisResult(result);
+      addOrUpdatePlantFromAnalysis(result);
+    } catch (error) {
+      console.error('Error analyzing plant growth:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Analysis Failed',
+        description: 'Could not analyze the plant. Please try again.',
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUri = e.target?.result as string;
+        if (dataUri) {
+          handleImageAnalysis(dataUri);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCapture = () => {
+    if (videoRef.current) {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoRef.current.videoWidth;
+        canvas.height = videoRef.current.videoHeight;
+        const context = canvas.getContext('2d');
+        if (context) {
+            context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+            const dataUri = canvas.toDataURL('image/png');
+            handleImageAnalysis(dataUri);
+            setScanMode(false);
+        }
     }
   };
 
@@ -269,37 +373,6 @@ function DashboardPage() {
       description: `${newPlantName} has been added to your garden.`,
     });
   };
-  
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      toast({
-        title: 'Image Uploaded',
-        description: `${file.name} is ready for analysis.`,
-      });
-    }
-  };
-
-  const handleCapture = () => {
-    if (videoRef.current) {
-        const canvas = document.createElement('canvas');
-        canvas.width = videoRef.current.videoWidth;
-        canvas.height = videoRef.current.videoHeight;
-        const context = canvas.getContext('2d');
-        if (context) {
-            context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-            const dataUri = canvas.toDataURL('image/png');
-            // Here you would typically send the dataUri to your AI service
-            console.log('Captured image data URI:', dataUri.substring(0, 50) + '...');
-            toast({
-                title: "Image Captured!",
-                description: "Sending for analysis...",
-            });
-            setScanMode(false);
-        }
-    }
-  };
-
 
   return (
     <>
@@ -314,20 +387,22 @@ function DashboardPage() {
             </p>
           </header>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {overviewItems.map((item) => (
-              <Card key={item.title}>
-                <CardContent className="p-6 flex items-center gap-4">
-                  <div className="bg-primary/10 p-3 rounded-lg">{item.icon}</div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{item.title}</p>
-                    <p className="text-2xl font-bold">{item.value}</p>
-                    <p className="text-xs text-muted-foreground">{item.change}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          {plantGrowth.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {overviewItems.map((item) => (
+                <Card key={item.title}>
+                  <CardContent className="p-6 flex items-center gap-4">
+                    <div className="bg-primary/10 p-3 rounded-lg">{item.icon}</div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">{item.title}</p>
+                      <p className="text-2xl font-bold">{item.value}</p>
+                      <p className="text-xs text-muted-foreground">{item.change}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
@@ -347,7 +422,7 @@ function DashboardPage() {
                 </CardHeader>
                 <CardContent>
                   {plantGrowth.length > 0 ? (
-                    <Accordion type="multiple" className="w-full" onValueChange={setActiveAccordionItem} value={activeAccordionItem as string[]}>
+                    <Accordion type="multiple" className="w-full" onValueChange={setActiveAccordionItem} value={activeAccordionItem}>
                       {plantGrowth.map((plant) => (
                         <AccordionItem value={plant.id} key={plant.id}>
                           <AccordionTrigger className="hover:no-underline">
@@ -459,87 +534,146 @@ function DashboardPage() {
                         <Camera className="mr-2 h-4 w-4" /> Start Scan
                       </Button>
                       <Button variant="outline" asChild>
-                         <Label htmlFor="upload-image" className="cursor-pointer">
+                         <Label htmlFor="upload-image-disease" className="cursor-pointer">
                             <Upload className="mr-2 h-4 w-4" /> Upload Image
-                            <Input id="upload-image" type="file" className="sr-only" accept="image/*" onChange={handleFileSelect} />
+                            <Input id="upload-image-disease" type="file" className="sr-only" accept="image/*" onChange={(e) => toast({ title: 'Image Uploaded', description: 'Ready for disease analysis.' })} />
                          </Label>
                       </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline flex items-center gap-2">
+                        <Sparkles className="h-6 w-6 text-primary" /> AI Plant Growth Analysis
+                        </CardTitle>
+                        <CardDescription>
+                        Get a detailed analysis of your plant's growth stage and health.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="bg-secondary/50 p-8 rounded-lg flex flex-col items-center text-center">
+                        <Sprout className="h-16 w-16 text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-semibold">Analyze Plant Growth</h3>
+                        <p className="text-sm text-muted-foreground mb-6 max-w-xs mx-auto">
+                            Upload a photo to get AI-powered insights on your plant&apos;s progress and health.
+                        </p>
+                        <div className="flex gap-4">
+                            <Button onClick={() => handleQuickAction('Start Scan', 'growth')}>
+                            <Camera className="mr-2 h-4 w-4" /> Start Scan
+                            </Button>
+                            <Button variant="outline" asChild>
+                            <Label htmlFor="upload-image-growth" className="cursor-pointer">
+                                <Upload className="mr-2 h-4 w-4" /> Upload Image
+                                <Input id="upload-image-growth" type="file" className="sr-only" accept="image/*" onChange={handleFileSelect} />
+                            </Label>
+                            </Button>
+                        </div>
+                        </div>
+                        {isAnalyzing && (
+                            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                                <Loader2 className="h-5 w-5 animate-spin" />
+                                <span>Analyzing your plant...</span>
+                            </div>
+                        )}
+                        {analysisResult && (
+                             <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+                                <CardHeader>
+                                    <CardTitle className="text-lg">Analysis Complete</CardTitle>
+                                </CardHeader>
+                                <CardContent className="text-sm space-y-2">
+                                    <p><strong>Plant Type:</strong> {analysisResult.plantType}</p>
+                                    <p><strong>Growth Stage:</strong> {analysisResult.growthStage}</p>
+                                    <p><strong>Growth Progress:</strong> {analysisResult.growthProgress}%</p>
+                                    <p><strong>Health Score:</strong> {analysisResult.healthScore}/100</p>
+                                </CardContent>
+                            </Card>
+                        )}
+                    </CardContent>
+                </Card>
+
             </div>
             <div className="space-y-8">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-headline flex items-center gap-2">
-                    <Bot className="h-6 w-6 text-primary" /> AI
-                    Recommendations
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {plantGrowth.length > 0 ? (
-                    aiRecommendations.map((rec) => (
-                      <div
-                        key={rec.text}
-                        className={`p-4 rounded-lg border-l-4 ${rec.color}`}
-                      >
-                        <p className="font-semibold">{rec.text}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {rec.subtext}
-                        </p>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-sm text-muted-foreground text-center py-4">Add plants to get personalized recommendations.</p>
-                  )}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-headline">
-                    Quick Actions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {quickActions.map((action) => (
-                    <Button
-                      key={action.text}
-                      variant="outline"
-                      className="w-full justify-start gap-2"
-                      onClick={() => toast({ title: 'Quick Action', description: `${action.text} triggered.`})}
-                    >
-                      {action.icon}
-                      {action.text}
-                    </Button>
-                  ))}
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-headline flex items-center gap-2">
-                    <Target className="h-6 w-6 text-primary" /> This
-                    Month's Goals
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {plantGrowth.length > 0 ? (
-                    goals.map((goal) => (
-                      <div key={goal.name}>
-                        <div className="flex justify-between items-center text-sm mb-1">
-                          <p className="font-medium">{goal.name}</p>
-                          <p className="text-muted-foreground">
-                            {goal.value}
+             {plantGrowth.length > 0 && (
+              <>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="font-headline flex items-center gap-2">
+                      <Bot className="h-6 w-6 text-primary" /> AI
+                      Recommendations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {aiRecommendations.map((rec) => (
+                        <div
+                          key={rec.text}
+                          className={`p-4 rounded-lg border-l-4 ${rec.color}`}
+                        >
+                          <p className="font-semibold">{rec.text}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {rec.subtext}
                           </p>
                         </div>
-                        <Progress value={goal.progress} />
-                      </div>
-                    ))
-                  ): (
-                     <p className="text-sm text-muted-foreground text-center py-4">Your goals will appear here once you start gardening.</p>
-                  )}
-                </CardContent>
-              </Card>
+                      ))}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="font-headline">
+                      Quick Actions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {quickActions.map((action) => (
+                      <Button
+                        key={action.text}
+                        variant="outline"
+                        className="w-full justify-start gap-2"
+                        onClick={() => toast({ title: 'Quick Action', description: `${action.text} triggered.`})}
+                      >
+                        {action.icon}
+                        {action.text}
+                      </Button>
+                    ))}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="font-headline flex items-center gap-2">
+                      <Target className="h-6 w-6 text-primary" /> This
+                      Month's Goals
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                      {goals.map((goal) => (
+                        <div key={goal.name}>
+                          <div className="flex justify-between items-center text-sm mb-1">
+                            <p className="font-medium">{goal.name}</p>
+                            <p className="text-muted-foreground">
+                              {goal.value}
+                            </p>
+                          </div>
+                          <Progress value={goal.progress} />
+                        </div>
+                      ))}
+                  </CardContent>
+                </Card>
+              </>
+              )}
+               {plantGrowth.length === 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="font-headline">Your Dashboard</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-muted-foreground">
+                            Add a plant or use the AI analysis tools to get started. Your recommendations and goals will appear here.
+                        </p>
+                    </CardContent>
+                </Card>
+               )}
             </div>
           </div>
         </div>
@@ -632,3 +766,4 @@ function DashboardPage() {
 export default withAuth(DashboardPage);
 
     
+
