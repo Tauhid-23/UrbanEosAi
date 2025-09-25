@@ -143,7 +143,7 @@ const ProductFormSchema = z.object({
   price: z.coerce.number().min(0, 'Price must be a positive number.'),
   category: z.string().min(2, 'Category is required.'),
   imageId: z.string().min(1, 'Image ID is required.'),
-  rating: z.coerce.number().min(0).max(5).optional().default(4.5),
+  rating: z.coerce.number().min(0).max(5).optional(),
 });
 
 export type ProductState = {
