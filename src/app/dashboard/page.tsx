@@ -320,6 +320,7 @@ function DashboardPage() {
     try {
       const response = await fetch('http://localhost:5678/webhook-test/a8f26ab9-5478-4dec-b0ce-7c44f2067bc7', {
         method: 'POST',
+        mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -328,15 +329,12 @@ function DashboardPage() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Network response was not ok.');
-      }
-
-      const result = await response.json();
-      console.log('Webhook success:', result);
+      // Since this is a no-cors request, we can't inspect the response.
+      // We'll assume it was sent successfully if no network error was thrown.
+      console.log('Webhook request sent.');
       toast({
-        title: 'Scan Complete!',
-        description: 'The disease scan was successful. Check results.',
+        title: 'Scan Sent!',
+        description: 'The plant image was sent for disease analysis.',
       });
     } catch (error) {
       console.error('Error sending to webhook:', error);
