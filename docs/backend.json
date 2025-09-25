@@ -1,0 +1,311 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "The user's unique ID."
+        },
+        "name": {
+          "type": "string",
+          "description": "The user's display name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "profileImage": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the user's profile image."
+        },
+        "subscriptionPlan": {
+          "type": "string",
+          "enum": ["free", "pro", "premium"],
+          "description": "The user's current subscription plan."
+        },
+        "isAdmin": {
+            "type": "boolean",
+            "description": "Whether the user has administrative privileges."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user account was created."
+        },
+        "lastLogin": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp of the user's last login."
+        }
+      },
+      "required": ["uid", "name", "email", "subscriptionPlan", "isAdmin", "createdAt"]
+    },
+    "Plant": {
+      "title": "Plant",
+      "description": "Represents a single plant managed by a user.",
+      "type": "object",
+      "properties": {
+        "ownerId": {
+          "type": "string",
+          "description": "The UID of the user who owns the plant."
+        },
+        "name": {
+          "type": "string",
+          "description": "The nickname given to the plant by the user."
+        },
+        "species": {
+          "type": "string",
+          "description": "The scientific or common name of the plant species."
+        },
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of an image of the plant."
+        },
+        "dateAdded": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the plant was added."
+        },
+        "latestGrowth": {
+          "type": "number",
+          "description": "The latest recorded growth progress percentage."
+        },
+        "healthScore": {
+          "type": "number",
+          "description": "The latest calculated health score (0-100)."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["healthy", "needs-attention", "sick"],
+          "description": "The current overall status of the plant."
+        }
+      },
+      "required": ["ownerId", "name", "species", "dateAdded"]
+    },
+    "GrowthHistory": {
+      "title": "Growth History Entry",
+      "description": "A single entry recording the state of a plant at a point in time.",
+      "type": "object",
+      "properties": {
+        "leafCount": {
+          "type": "number",
+          "description": "The number of leaves on the plant."
+        },
+        "healthScore": {
+          "type": "number",
+          "description": "The health score at the time of recording."
+        },
+        "growthStage": {
+          "type": "string",
+          "enum": ["seedling", "vegetative", "flowering", "harvest-ready"],
+          "description": "The growth stage at the time of recording."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp of this history entry."
+        }
+      },
+      "required": ["healthScore", "growthStage", "timestamp"]
+    },
+    "DiseaseScan": {
+      "title": "Disease Scan Result",
+      "description": "The result of an AI disease scan for a plant.",
+      "type": "object",
+      "properties": {
+        "imageUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL of the image that was scanned."
+        },
+        "diagnosis": {
+          "type": "string",
+          "description": "The AI's diagnosis of the plant's condition."
+        },
+        "confidence": {
+          "type": "number",
+          "description": "The confidence score of the diagnosis (0-1)."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp of the scan."
+        }
+      },
+      "required": ["imageUrl", "diagnosis", "confidence", "timestamp"]
+    },
+    "Product": {
+      "title": "Marketplace Product",
+      "description": "A product available for sale in the marketplace.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "category": {
+          "type": "string",
+          "enum": ["Seeds", "Tools", "Kits", "Soil & Care", "Containers"]
+        },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "stock": { "type": "number" },
+        "rating": { "type": "number" }
+      },
+      "required": ["name", "category", "price", "stock"]
+    },
+    "CartItem": {
+      "title": "Shopping Cart Item",
+      "description": "An item within a user's shopping cart.",
+      "type": "object",
+      "properties": {
+        "productId": { "type": "string" },
+        "quantity": { "type": "number" },
+        "price": { "type": "number" }
+      },
+      "required": ["productId", "quantity", "price"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A completed order made by a user.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "items": {
+          "type": "array",
+          "items": { "$ref": "#/entities/CartItem" }
+        },
+        "total": { "type": "number" },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "paid", "shipped", "delivered", "cancelled"]
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "items", "total", "status", "createdAt"]
+    },
+    "BlogPost": {
+      "title": "Blog Post",
+      "description": "An article in the blog.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "author": { "type": "string" },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["title", "content", "author", "publishedAt"]
+    },
+    "Resource": {
+      "title": "Resource",
+      "description": "An external gardening resource.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "url": { "type": "string", "format": "uri" },
+        "type": { "type": "string", "enum": ["article", "community", "tool"] }
+      },
+      "required": ["title", "url", "type"]
+    },
+    "ContactMessage": {
+      "title": "Contact Message",
+      "description": "A message submitted through the contact form.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "message": { "type": "string" },
+        "status": { "type": "string", "enum": ["new", "replied"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "message", "status", "createdAt"]
+    },
+    "Goal": {
+      "title": "User Goal",
+      "description": "A goal a user sets for themselves.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "progress": { "type": "number" },
+        "target": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "completed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "target", "status", "createdAt"]
+    },
+    "Subscription": {
+      "title": "User Subscription",
+      "description": "A user's payment subscription details.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "plan": { "type": "string", "enum": ["free", "pro", "premium"] },
+        "status": { "type": "string", "enum": ["active", "cancelled", "past_due"] },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "plan", "status", "startDate"]
+    }
+  },
+  "auth": {
+    "providers": ["email", "google.com"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores public profiles for all users."
+    },
+    "/plants/{plantId}": {
+      "schema": { "$ref": "#/entities/Plant" },
+      "description": "Collection of all plants across all users, indexed by plantId."
+    },
+    "/plants/{plantId}/growthHistory/{entryId}": {
+      "schema": { "$ref": "#/entities/GrowthHistory" },
+      "description": "Subcollection for storing time-series growth data for a specific plant."
+    },
+    "/plants/{plantId}/diseaseScans/{scanId}": {
+      "schema": { "$ref": "#/entities/DiseaseScan" },
+      "description": "Subcollection for storing AI disease scan results for a specific plant."
+    },
+    "/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Collection of all marketplace products."
+    },
+    "/users/{userId}/cart/{itemId}": {
+      "schema": { "$ref": "#/entities/CartItem" },
+      "description": "Subcollection representing a user's shopping cart."
+    },
+    "/orders/{orderId}": {
+      "schema": { "$ref": "#/entities/Order" },
+      "description": "Collection of all orders."
+    },
+    "/blogPosts/{postId}": {
+      "schema": { "$ref": "#/entities/BlogPost" },
+      "description": "Collection of all blog posts."
+    },
+    "/resources/{resourceId}": {
+      "schema": { "$ref": "#/entities/Resource" },
+      "description": "Collection of all external resources."
+    },
+    "/contactMessages/{messageId}": {
+      "schema": { "$ref": "#/entities/ContactMessage" },
+      "description": "Collection of all contact form submissions."
+    },
+    "/users/{userId}/goals/{goalId}": {
+      "schema": { "$ref": "#/entities/Goal" },
+      "description": "Subcollection for user-specific goals."
+    },
+    "/subscriptions/{subId}": {
+      "schema": { "$ref": "#/entities/Subscription" },
+      "description": "Collection of all user subscriptions."
+    }
+  }
+}

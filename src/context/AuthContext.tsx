@@ -2,14 +2,14 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User } from 'firebase/auth';
+import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User, updateProfile, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { updateProfile } from 'firebase/auth';
 
 // Define an extended User type to include our custom fields
 export interface AppUser extends User {
   isAdmin?: boolean;
+  subscriptionPlan?: 'free' | 'pro' | 'premium';
 }
 
 interface AuthContextType {
@@ -17,6 +17,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, displayName: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
+  signInWithGoogle: () => Promise<any>;
   signOut: () => Promise<void>;
 }
 
@@ -25,6 +26,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signUp: async () => {},
   signIn: async () => {},
+  signInWithGoogle: async () => {},
   signOut: async () => {},
 });
 
@@ -44,7 +46,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             ...userDoc.data(),
           } as AppUser);
         } else {
-          setUser(user as AppUser);
+           // This case can happen if a user authenticates but their Firestore doc hasn't been created yet
+          await createUserProfile(user, user.displayName || 'Google User');
         }
       } else {
         setUser(null);
@@ -55,33 +58,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
+  const createUserProfile = async (user: User, displayName: string) => {
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (!userDoc.exists()) {
+        await setDoc(userDocRef, {
+            uid: user.uid,
+            email: user.email,
+            name: displayName,
+            profileImage: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
+            subscriptionPlan: 'free',
+            isAdmin: false, // Default to not being an admin
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+        });
+    }
+
+     // To update the user state immediately after creation/sign-in
+    const newUserDoc = await getDoc(userDocRef);
+    if(newUserDoc.exists()) {
+        setUser({ ...user, ...newUserDoc.data() } as AppUser);
+    }
+  }
+
   const signUp = async (email: string, password: string, displayName: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
-
     await updateProfile(user, { displayName });
-
-    const userDocRef = doc(db, 'users', user.uid);
-    // Add new user data to Firestore
-    await setDoc(userDocRef, {
-      uid: user.uid,
-      email: user.email,
-      displayName: displayName,
-      createdAt: serverTimestamp(),
-      isAdmin: false, // Default to not being an admin
-    });
-    
-    // To update the user state immediately after sign-up
-    const userDoc = await getDoc(userDocRef);
-    if(userDoc.exists()) {
-        setUser({ ...user, ...userDoc.data() } as AppUser);
-    }
-
+    await createUserProfile(user, displayName);
     return userCredential;
   };
 
-  const signIn = (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  const signIn = async (email: string, password: string) => {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const userDocRef = doc(db, 'users', userCredential.user.uid);
+    await setDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
+    return userCredential;
+  };
+  
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    const userCredential = await signInWithPopup(auth, provider);
+    const user = userCredential.user;
+    await createUserProfile(user, user.displayName!);
+    return userCredential;
   };
 
   const logOut = () => {
@@ -93,6 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut: logOut,
   };
 

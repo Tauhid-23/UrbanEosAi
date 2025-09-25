@@ -1,0 +1,81 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper function to check for admin role
+    function isAdmin() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+    }
+
+    // Users can read and write their own profile. Admins can read any profile.
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && request.auth.uid == userId;
+      // Allow user creation for any authenticated user.
+      allow create: if request.auth != null;
+
+      // Cart: Users can only manage their own cart.
+      match /cart/{itemId} {
+        allow read, write, delete: if request.auth.uid == userId;
+      }
+      
+      // Goals: Users can only manage their own goals.
+      match /goals/{goalId} {
+        allow read, write, delete: if request.auth.uid == userId;
+      }
+    }
+
+    // Plants: Users can manage plants they own. Admins can read any plant.
+    match /plants/{plantId} {
+      allow read: if request.auth != null && (resource.data.ownerId == request.auth.uid || isAdmin());
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
+      allow update, delete: if request.auth != null && resource.data.ownerId == request.auth.uid;
+
+      // Growth History & Disease Scans: Users can manage data for plants they own.
+      match /growthHistory/{entryId} {
+        allow read, write, delete: if get(/databases/$(database)/documents/plants/$(plantId)).data.ownerId == request.auth.uid;
+      }
+      match /diseaseScans/{scanId} {
+        allow read, write, delete: if get(/databases/$(database)/documents/plants/$(plantId)).data.ownerId == request.auth.uid;
+      }
+    }
+    
+    // Marketplace: Products are publicly readable, but only writable by admins.
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Orders: Users can create orders and read their own orders. Admins can read all orders.
+    match /orders/{orderId} {
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAdmin(); // Admins can update order status
+    }
+    
+    // Blog: Publicly readable, admin writable.
+    match /blogPosts/{postId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Resources: Publicly readable, admin writable.
+    match /resources/{resourceId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Contact Messages: Only admins can read/write. Users can create.
+    match /contactMessages/{messageId} {
+      allow create: if true;
+      allow read, write, delete: if isAdmin();
+    }
+
+    // Subscriptions: Users can only read their own subscription data. Admins have full access.
+    match /subscriptions/{subId} {
+        allow read: if request.auth != null && (resource.data.userId == request.auth.uid || isAdmin());
+        allow write: if isAdmin(); // Stripe webhooks will need service account access. Client-side should not write here.
+    }
+  }
+}
