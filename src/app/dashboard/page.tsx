@@ -321,9 +321,6 @@ function DashboardPage() {
       const response = await fetch('http://localhost:5678/webhook-test/a8f26ab9-5478-4dec-b0ce-7c44f2067bc7', {
         method: 'POST',
         mode: 'no-cors',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           imageData: dataUri,
         }),
@@ -861,5 +858,3 @@ function DashboardPage() {
 }
 
 export default withAuth(DashboardPage);
-
-    
