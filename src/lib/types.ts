@@ -19,6 +19,7 @@ export type Product = {
 };
 
 export type BlogPost = {
+  id: string;
   slug: string;
   title: string;
   excerpt: string;
@@ -45,7 +46,7 @@ export type Category = {
 };
 
 export type Feature = {
-  name: string;
+  name:string;
   description: string;
   icon: string;
 };

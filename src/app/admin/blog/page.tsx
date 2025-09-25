@@ -1,4 +1,5 @@
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import BlogPostsTable from './components/BlogPostsTable';
 
 export default function AdminBlogPage() {
   return (
@@ -6,11 +7,12 @@ export default function AdminBlogPage() {
       <Card>
         <CardHeader>
           <CardTitle>Blog Management</CardTitle>
+          <CardDescription>
+            A table of all blog posts with management actions.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            A list of all blog posts with management actions (create, edit, delete) will be displayed here soon.
-          </p>
+          <BlogPostsTable />
         </CardContent>
       </Card>
     </div>

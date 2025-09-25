@@ -120,13 +120,22 @@ export async function createBlogPost(
 
   try {
     const blogRef = collection(db, 'blogPosts');
-    await addDoc(blogRef, {
+    const docRef = await addDoc(blogRef, {
       ...validatedFields.data,
       slug: slugify(validatedFields.data.title),
       date: serverTimestamp(),
     });
+    
+    await addDoc(collection(db, 'auditLogs'), {
+        adminId: 'admin-placeholder', // TODO: Get actual admin UID
+        action: 'createdBlogPost',
+        targetId: docRef.id,
+        details: `Created blog post: ${validatedFields.data.title}`,
+        timestamp: serverTimestamp(),
+    });
 
     revalidatePath('/blog');
+    revalidatePath('/admin/blog');
     revalidatePath('/admin');
     return { message: 'Blog post created successfully!' };
   } catch (e) {
@@ -143,7 +152,7 @@ const ProductFormSchema = z.object({
   price: z.coerce.number().min(0, 'Price must be a positive number.'),
   category: z.string().min(2, 'Category is required.'),
   imageId: z.string().min(1, 'Image ID is required.'),
-  rating: z.coerce.number().min(0).max(5).optional(),
+  rating: z.coerce.number().min(0).max(5).optional().default(0),
 });
 
 export type ProductState = {
@@ -180,9 +189,18 @@ export async function createProduct(
 
   try {
     const productRef = collection(db, 'products');
-    await addDoc(productRef, validatedFields.data);
+    const docRef = await addDoc(productRef, validatedFields.data);
+
+    await addDoc(collection(db, 'auditLogs'), {
+        adminId: 'admin-placeholder', // TODO: Get actual admin UID
+        action: 'createdProduct',
+        targetId: docRef.id,
+        details: `Created product: ${validatedFields.data.name}`,
+        timestamp: serverTimestamp(),
+    });
 
     revalidatePath('/marketplace');
+    revalidatePath('/admin/marketplace');
     revalidatePath('/admin');
     return { message: 'Product created successfully!' };
   } catch (e) {

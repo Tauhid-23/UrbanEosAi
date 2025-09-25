@@ -1,4 +1,5 @@
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import ProductsTable from './components/ProductsTable';
 
 export default function AdminMarketplacePage() {
   return (
@@ -6,11 +7,12 @@ export default function AdminMarketplacePage() {
       <Card>
         <CardHeader>
           <CardTitle>Marketplace Management</CardTitle>
+           <CardDescription>
+            A table of all marketplace products with management actions.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            A table of all marketplace products and orders with management actions will be displayed here soon.
-          </p>
+          <ProductsTable />
         </CardContent>
       </Card>
     </div>

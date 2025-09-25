@@ -36,41 +36,32 @@ import { MoreHorizontal, Trash2, Edit } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
+import type { Product } from '@/lib/types';
 
-type UserProfile = {
-  id: string;
-  name: string;
-  email: string;
-  isAdmin: boolean;
-  subscriptionPlan: 'free' | 'pro' | 'premium';
-  createdAt: { seconds: number; nanoseconds: number; } | null;
-};
-
-export default function UserTable() {
+export default function ProductsTable() {
   const { user: adminUser } = useAuth();
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
   const { toast } = useToast();
 
   useEffect(() => {
-    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'products'), orderBy('name', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const usersData = snapshot.docs.map(doc => ({
+      const productsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-      })) as UserProfile[];
-      setUsers(usersData);
+      })) as Product[];
+      setProducts(productsData);
       setLoading(false);
     }, (error) => {
-      console.error("Error fetching users:", error);
+      console.error("Error fetching products:", error);
       toast({
           variant: 'destructive',
           title: 'Error',
-          description: 'Failed to fetch users.',
+          description: 'Failed to fetch products.',
       });
       setLoading(false);
     });
@@ -78,52 +69,41 @@ export default function UserTable() {
     return () => unsubscribe();
   }, [toast]);
 
-  const openDeleteDialog = (user: UserProfile) => {
-    setUserToDelete(user);
+  const openDeleteDialog = (product: Product) => {
+    setProductToDelete(product);
     setIsDeleteDialogOpen(true);
   };
 
-  const handleDeleteUser = async () => {
-    if (!userToDelete || !adminUser) return;
-    
-    // Prevent admin from deleting themselves
-    if (userToDelete.id === adminUser.uid) {
-        toast({
-            variant: 'destructive',
-            title: 'Action Forbidden',
-            description: 'You cannot delete your own account.',
-        });
-        setIsDeleteDialogOpen(false);
-        return;
-    }
+  const handleDeleteProduct = async () => {
+    if (!productToDelete || !adminUser) return;
 
     try {
-      // Delete user document
-      await deleteDoc(doc(db, 'users', userToDelete.id));
+      // Delete product document
+      await deleteDoc(doc(db, 'products', productToDelete.id));
       
       // Log the audit action
       await addDoc(collection(db, 'auditLogs'), {
         adminId: adminUser.uid,
-        action: 'deletedUser',
-        targetId: userToDelete.id,
-        details: `Deleted user: ${userToDelete.name} (${userToDelete.email})`,
+        action: 'deletedProduct',
+        targetId: productToDelete.id,
+        details: `Deleted product: ${productToDelete.name}`,
         timestamp: serverTimestamp(),
       });
 
       toast({
-        title: 'User Deleted',
-        description: `${userToDelete.name} has been successfully deleted.`,
+        title: 'Product Deleted',
+        description: `${productToDelete.name} has been successfully deleted.`,
       });
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error('Error deleting product:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to delete user.',
+        description: 'Failed to delete product.',
       });
     } finally {
         setIsDeleteDialogOpen(false);
-        setUserToDelete(null);
+        setProductToDelete(null);
     }
   };
 
@@ -144,27 +124,22 @@ export default function UserTable() {
           <TableHeader>
             <TableRow>
               <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>Joined</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Rating</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
+            {products.map((product) => (
+              <TableRow key={product.id}>
+                <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell>
-                  <Badge variant={user.isAdmin ? 'default' : 'secondary'}>
-                    {user.isAdmin ? 'Admin' : 'User'}
-                  </Badge>
+                    <Badge variant="secondary">{product.category}</Badge>
                 </TableCell>
-                 <TableCell className="capitalize">{user.subscriptionPlan}</TableCell>
-                 <TableCell>
-                    {user.createdAt ? format(new Date(user.createdAt.seconds * 1000), 'PPP') : 'N/A'}
-                 </TableCell>
+                <TableCell>${product.price.toFixed(2)}</TableCell>
+                <TableCell>{product.rating.toFixed(1)}</TableCell>
+
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -175,14 +150,14 @@ export default function UserTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => toast({ title: 'Edit User (Coming Soon)', description: `This will allow editing ${user.name}.`})}>
+                      <DropdownMenuItem onClick={() => toast({ title: 'Edit Product (Coming Soon)', description: `This will allow editing ${product.name}.`})}>
                         <Edit className="mr-2 h-4 w-4" />
-                        Edit Role
+                        Edit Product
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive" onClick={() => openDeleteDialog(user)}>
+                      <DropdownMenuItem className="text-destructive" onClick={() => openDeleteDialog(product)}>
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete User
+                        Delete Product
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -197,13 +172,13 @@ export default function UserTable() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the user account for <span className="font-bold">{userToDelete?.name}</span> and remove their data from our servers.
+              This action cannot be undone. This will permanently delete the product <span className="font-bold">{productToDelete?.name}</span> from the marketplace.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive hover:bg-destructive/90">
-              Yes, delete user
+            <AlertDialogAction onClick={handleDeleteProduct} className="bg-destructive hover:bg-destructive/90">
+              Yes, delete product
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

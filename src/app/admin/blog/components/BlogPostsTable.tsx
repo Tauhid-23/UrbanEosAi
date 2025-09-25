@@ -36,41 +36,35 @@ import { MoreHorizontal, Trash2, Edit } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import type { BlogPost } from '@/lib/types';
 import { format } from 'date-fns';
 
-type UserProfile = {
-  id: string;
-  name: string;
-  email: string;
-  isAdmin: boolean;
-  subscriptionPlan: 'free' | 'pro' | 'premium';
-  createdAt: { seconds: number; nanoseconds: number; } | null;
-};
+type BlogPostWithId = BlogPost & { id: string, date: any };
 
-export default function UserTable() {
+export default function BlogPostsTable() {
   const { user: adminUser } = useAuth();
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [posts, setPosts] = useState<BlogPostWithId[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<UserProfile | null>(null);
+  const [postToDelete, setPostToDelete] = useState<BlogPostWithId | null>(null);
 
   const { toast } = useToast();
 
   useEffect(() => {
-    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
+    const q = query(collection(db, 'blogPosts'), orderBy('date', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const usersData = snapshot.docs.map(doc => ({
+      const postsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-      })) as UserProfile[];
-      setUsers(usersData);
+      })) as BlogPostWithId[];
+      setPosts(postsData);
       setLoading(false);
     }, (error) => {
-      console.error("Error fetching users:", error);
+      console.error("Error fetching blog posts:", error);
       toast({
           variant: 'destructive',
           title: 'Error',
-          description: 'Failed to fetch users.',
+          description: 'Failed to fetch blog posts.',
       });
       setLoading(false);
     });
@@ -78,52 +72,41 @@ export default function UserTable() {
     return () => unsubscribe();
   }, [toast]);
 
-  const openDeleteDialog = (user: UserProfile) => {
-    setUserToDelete(user);
+  const openDeleteDialog = (post: BlogPostWithId) => {
+    setPostToDelete(post);
     setIsDeleteDialogOpen(true);
   };
 
-  const handleDeleteUser = async () => {
-    if (!userToDelete || !adminUser) return;
-    
-    // Prevent admin from deleting themselves
-    if (userToDelete.id === adminUser.uid) {
-        toast({
-            variant: 'destructive',
-            title: 'Action Forbidden',
-            description: 'You cannot delete your own account.',
-        });
-        setIsDeleteDialogOpen(false);
-        return;
-    }
+  const handleDeletePost = async () => {
+    if (!postToDelete || !adminUser) return;
 
     try {
-      // Delete user document
-      await deleteDoc(doc(db, 'users', userToDelete.id));
+      // Delete post document
+      await deleteDoc(doc(db, 'blogPosts', postToDelete.id));
       
       // Log the audit action
       await addDoc(collection(db, 'auditLogs'), {
         adminId: adminUser.uid,
-        action: 'deletedUser',
-        targetId: userToDelete.id,
-        details: `Deleted user: ${userToDelete.name} (${userToDelete.email})`,
+        action: 'deletedBlogPost',
+        targetId: postToDelete.id,
+        details: `Deleted blog post: ${postToDelete.title}`,
         timestamp: serverTimestamp(),
       });
 
       toast({
-        title: 'User Deleted',
-        description: `${userToDelete.name} has been successfully deleted.`,
+        title: 'Blog Post Deleted',
+        description: `"${postToDelete.title}" has been successfully deleted.`,
       });
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error('Error deleting post:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to delete user.',
+        description: 'Failed to delete blog post.',
       });
     } finally {
         setIsDeleteDialogOpen(false);
-        setUserToDelete(null);
+        setPostToDelete(null);
     }
   };
 
@@ -143,27 +126,23 @@ export default function UserTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Plan</TableHead>
-              <TableHead>Joined</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Author</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Date</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell className="font-medium">{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
+            {posts.map((post) => (
+              <TableRow key={post.id}>
+                <TableCell className="font-medium">{post.title}</TableCell>
+                <TableCell>{post.author}</TableCell>
                 <TableCell>
-                  <Badge variant={user.isAdmin ? 'default' : 'secondary'}>
-                    {user.isAdmin ? 'Admin' : 'User'}
-                  </Badge>
+                    <Badge variant="outline">{post.category}</Badge>
                 </TableCell>
-                 <TableCell className="capitalize">{user.subscriptionPlan}</TableCell>
                  <TableCell>
-                    {user.createdAt ? format(new Date(user.createdAt.seconds * 1000), 'PPP') : 'N/A'}
+                    {post.date ? format(post.date.toDate(), 'PPP') : 'N/A'}
                  </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
@@ -175,14 +154,14 @@ export default function UserTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => toast({ title: 'Edit User (Coming Soon)', description: `This will allow editing ${user.name}.`})}>
+                      <DropdownMenuItem onClick={() => toast({ title: 'Edit Post (Coming Soon)', description: `This will allow editing ${post.title}.`})}>
                         <Edit className="mr-2 h-4 w-4" />
-                        Edit Role
+                        Edit Post
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-destructive" onClick={() => openDeleteDialog(user)}>
+                      <DropdownMenuItem className="text-destructive" onClick={() => openDeleteDialog(post)}>
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete User
+                        Delete Post
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -197,13 +176,13 @@ export default function UserTable() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the user account for <span className="font-bold">{userToDelete?.name}</span> and remove their data from our servers.
+              This action cannot be undone. This will permanently delete the blog post <span className="font-bold">"{postToDelete?.title}"</span>.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteUser} className="bg-destructive hover:bg-destructive/90">
-              Yes, delete user
+            <AlertDialogAction onClick={handleDeletePost} className="bg-destructive hover:bg-destructive/90">
+              Yes, delete post
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
