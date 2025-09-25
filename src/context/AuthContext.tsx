@@ -44,6 +44,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Merge the firebase user object with the custom data from firestore
       return {
         ...firebaseUser,
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName,
+        photoURL: firebaseUser.photoURL,
         role: customData.role || 'user',
         subscriptionPlan: customData.subscriptionPlan || 'free',
       } as AppUser;
@@ -60,9 +64,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         lastLogin: serverTimestamp(),
       };
       await setDoc(userDocRef, userProfileData);
+      
+      const { name, ...restOfProfile } = userProfileData;
+
       return {
         ...firebaseUser,
-        ...userProfileData,
+        displayName: name,
+        ...restOfProfile
       } as AppUser;
     }
   };
@@ -103,7 +111,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await setDoc(userDocRef, userProfileData);
     
     // Set user in state
-    setUser({ ...firebaseUser, ...userProfileData } as AppUser);
+    const { name, ...restOfProfile } = userProfileData;
+    setUser({ ...firebaseUser, displayName: name, ...restOfProfile } as AppUser);
     
     return userCredential;
   };
@@ -141,7 +150,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     signOut: logOut,
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -16,8 +17,12 @@ const withAuth = <P extends object>(Component: React.ComponentType<P>) => {
       }
     }, [user, loading, router]);
 
-    if (loading || !user) {
+    if (loading) {
       return <Loading />;
+    }
+    
+    if (!user) {
+      return null;
     }
 
     return <Component {...props} />;

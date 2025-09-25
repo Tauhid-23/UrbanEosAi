@@ -33,17 +33,6 @@ function AdminPage() {
   const { toast } = useToast();
   const [isSeeding, setIsSeeding] = useState(false);
 
-  useEffect(() => {
-    if (user && user.role !== 'admin') {
-      toast({
-        variant: 'destructive',
-        title: 'Access Denied',
-        description: 'You do not have permission to view this page.',
-      });
-      router.push('/dashboard');
-    }
-  }, [user, router, toast]);
-
   const seedDatabase = async () => {
     setIsSeeding(true);
     toast({
@@ -96,8 +85,16 @@ function AdminPage() {
   if (!user || user.role !== 'admin') {
     return (
       <div className="container mx-auto flex h-full flex-col items-center justify-center p-4">
-        <p className="mb-4">Verifying permissions...</p>
-        <p className="text-sm text-muted-foreground">You will be redirected if you do not have admin access.</p>
+         <Card className="w-full max-w-md">
+            <CardHeader>
+                <CardTitle>Access Denied</CardTitle>
+                <CardDescription>You do not have permission to view this page.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <p>Please contact an administrator if you believe this is a mistake.</p>
+                <Button onClick={() => router.push('/')} className="mt-4 w-full">Go to Homepage</Button>
+            </CardContent>
+        </Card>
       </div>
     );
   }
