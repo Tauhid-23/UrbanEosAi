@@ -312,7 +312,44 @@ function DashboardPage() {
     }
   };
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDiseaseScan = async (dataUri: string) => {
+    toast({
+      title: 'Scanning for diseases...',
+      description: 'The AI is analyzing your plant for any issues.',
+    });
+    try {
+      const response = await fetch('http://localhost:5678/webhook-test/a8f26ab9-5478-4dec-b0ce-7c44f2067bc7', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageData: dataUri,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok.');
+      }
+
+      const result = await response.json();
+      console.log('Webhook success:', result);
+      toast({
+        title: 'Scan Complete!',
+        description: 'The disease scan was successful. Check results.',
+      });
+    } catch (error) {
+      console.error('Error sending to webhook:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Scan Failed',
+        description: 'Could not send image for disease analysis.',
+      });
+    }
+  };
+
+
+  const handleGrowthFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -320,6 +357,20 @@ function DashboardPage() {
         const dataUri = e.target?.result as string;
         if (dataUri) {
           handleImageAnalysis(dataUri);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const handleDiseaseFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUri = e.target?.result as string;
+        if (dataUri) {
+          handleDiseaseScan(dataUri);
         }
       };
       reader.readAsDataURL(file);
@@ -335,7 +386,11 @@ function DashboardPage() {
         if (context) {
             context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
             const dataUri = canvas.toDataURL('image/png');
-            handleImageAnalysis(dataUri);
+            // Assuming capture is for both, you can decide which one to call
+            // or call both if needed. For now, let's call disease scan.
+            handleDiseaseScan(dataUri); 
+            // You might also want to call handleImageAnalysis(dataUri) if a single
+            // capture should trigger both analyses.
             setScanMode(false);
         }
     }
@@ -591,7 +646,7 @@ function DashboardPage() {
                                 <Button variant="outline" asChild>
                                     <Label htmlFor="upload-image-disease" className="cursor-pointer">
                                         <Upload className="mr-2 h-4 w-4" /> Upload
-                                        <Input id="upload-image-disease" type="file" className="sr-only" accept="image/*" onChange={(e) => toast({ title: 'Image Uploaded', description: 'Ready for disease analysis.' })} />
+                                        <Input id="upload-image-disease" type="file" className="sr-only" accept="image/*" onChange={handleDiseaseFileSelect} />
                                     </Label>
                                 </Button>
                             </div>
@@ -616,7 +671,7 @@ function DashboardPage() {
                             <Button variant="outline" className="w-full" asChild>
                                 <Label htmlFor="upload-image-growth" className="cursor-pointer">
                                     <Upload className="mr-2 h-4 w-4" /> Upload Image
-                                    <Input id="upload-image-growth" type="file" className="sr-only" accept="image/*" onChange={handleFileSelect} />
+                                    <Input id="upload-image-growth" type="file" className="sr-only" accept="image/*" onChange={handleGrowthFileSelect} />
                                 </Label>
                             </Button>
                         </div>
@@ -808,5 +863,3 @@ function DashboardPage() {
 }
 
 export default withAuth(DashboardPage);
-
-    
