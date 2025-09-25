@@ -34,21 +34,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchUserProfile = async (firebaseUser: User): Promise<AppUser> => {
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      const customData = userDoc.data();
+      // Combine Firebase user object with our custom data
+      return {
+        ...firebaseUser,
+        role: customData.role,
+        subscriptionPlan: customData.subscriptionPlan,
+      };
+    }
+    // If doc doesn't exist, create it and return the combined object
+    return await createUserProfile(firebaseUser, firebaseUser.displayName || 'New User');
+  };
+  
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          // Combine Firebase user object with our custom data
-          setUser({
-            ...user,
-            ...userDoc.data(),
-          } as AppUser);
-        } else {
-           // This case can happen if a user authenticates but their Firestore doc hasn't been created yet
-          await createUserProfile(user, user.displayName || 'Google User');
-        }
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        const appUser = await fetchUserProfile(firebaseUser);
+        setUser(appUser);
       } else {
         setUser(null);
       }
@@ -58,34 +64,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const createUserProfile = async (user: User, displayName: string) => {
-    const userDocRef = doc(db, 'users', user.uid);
-    const userDoc = await getDoc(userDocRef);
-    if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-            uid: user.uid,
-            email: user.email,
-            name: displayName,
-            profileImage: user.photoURL || `https://i.pravatar.cc/150?u=${user.uid}`,
-            subscriptionPlan: 'free',
-            role: 'user', // Default to user role
-            createdAt: serverTimestamp(),
-            lastLogin: serverTimestamp(),
-        });
-    }
+  const createUserProfile = async (firebaseUser: User, displayName: string): Promise<AppUser> => {
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userProfileData = {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        name: displayName,
+        profileImage: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
+        subscriptionPlan: 'free' as const,
+        role: 'user' as const,
+        createdAt: serverTimestamp(),
+        lastLogin: serverTimestamp(),
+    };
+    await setDoc(userDocRef, userProfileData, { merge: true });
 
-     // To update the user state immediately after creation/sign-in
-    const newUserDoc = await getDoc(userDocRef);
-    if(newUserDoc.exists()) {
-        setUser({ ...user, ...newUserDoc.data() } as AppUser);
-    }
+    return { ...firebaseUser, ...userProfileData };
   }
 
   const signUp = async (email: string, password: string, displayName: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    await updateProfile(user, { displayName });
-    await createUserProfile(user, displayName);
+    const firebaseUser = userCredential.user;
+    await updateProfile(firebaseUser, { displayName });
+    const appUser = await createUserProfile(firebaseUser, displayName);
+    setUser(appUser); // Set user state immediately after sign up
     return userCredential;
   };
 
@@ -93,19 +94,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const userDocRef = doc(db, 'users', userCredential.user.uid);
     await setDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
+    
     // Fetch and set custom user data on sign-in
-    const userDoc = await getDoc(userDocRef);
-    if (userDoc.exists()) {
-      setUser({ ...userCredential.user, ...userDoc.data() } as AppUser);
-    }
+    const appUser = await fetchUserProfile(userCredential.user);
+    setUser(appUser);
+    
     return userCredential;
   };
   
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
-    const user = userCredential.user;
-    await createUserProfile(user, user.displayName!);
+    const firebaseUser = userCredential.user;
+    const appUser = await createUserProfile(firebaseUser, firebaseUser.displayName!);
+    setUser(appUser); // Set user state immediately after Google sign-in
     return userCredential;
   };
 
