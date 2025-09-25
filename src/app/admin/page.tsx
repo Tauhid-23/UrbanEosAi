@@ -101,8 +101,9 @@ function AdminPage() {
   // Render a loading state or null if the user is not an admin
   if (!user || user.role !== 'admin') {
     return (
-      <div className="container mx-auto flex h-full items-center justify-center p-4">
-        <p>Verifying permissions...</p>
+      <div className="container mx-auto flex h-full flex-col items-center justify-center p-4">
+        <p className="mb-4">Verifying permissions...</p>
+        <p className="text-sm text-muted-foreground">You will be redirected if you do not have admin access.</p>
       </div>
     );
   }
@@ -143,7 +144,7 @@ function AdminPage() {
                 <CardDescription>
                   Fill out the form to add a new article to your blog.
                 </CardDescription>
-              </CardHeader>
+              </Header>
               <CardContent>
                 <CreateBlogPostForm />
               </CardContent>
@@ -154,7 +155,7 @@ function AdminPage() {
                 <CardDescription>
                   Add a new item to your marketplace.
                 </CardDescription>
-              </CardHeader>
+              </Header>
               <CardContent>
                 <CreateProductForm />
               </CardContent>

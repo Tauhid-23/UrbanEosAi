@@ -76,9 +76,12 @@ export function Header() {
 
   const getFilteredNavLinks = () => {
     let links = [...navLinks];
+    // Add admin links only if the user is an admin
     if (user?.role === 'admin') {
-      links.push(...adminNavLinks);
+      // Use unshift to add to the beginning of the nav for better visibility
+      links.splice(1, 0, ...adminNavLinks);
     }
+    // Filter out links that require auth if user is not logged in
     return links.filter(link => !link.auth || !!user);
   };
   
@@ -122,7 +125,7 @@ export function Header() {
           </div>
           <nav className="hidden md:flex items-center space-x-6">
             {filteredNavLinks.map((link) => (
-              !link.admin && <NavLink key={link.href} {...link} />
+              <NavLink key={link.href} {...link} />
             ))}
           </nav>
         </div>
