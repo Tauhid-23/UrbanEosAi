@@ -25,7 +25,7 @@ export type BlogPost = {
   excerpt: string;
   content: string;
   author: string;
-  date: Timestamp | string; // Firestore timestamp or string
+  date: Timestamp | string; // Firestore timestamp or ISO string
   imageId: string;
   category: string;
 };
@@ -56,6 +56,6 @@ export type ContactMessage = {
     name: string;
     email: string;
     message: string;
-    createdAt: Date;
+    createdAt: Timestamp;
     status: 'new' | 'replied';
 };

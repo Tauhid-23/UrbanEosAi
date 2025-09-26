@@ -93,7 +93,7 @@ export const features: Feature[] = [
   },
 ];
 
-export const blogPosts: Omit<BlogPost, 'slug' | 'date'>[] = [
+export const blogPosts: Omit<BlogPost, 'id' | 'slug' | 'date'>[] = [
   {
     title: '5 Tips for Successful Balcony Gardening',
     excerpt:

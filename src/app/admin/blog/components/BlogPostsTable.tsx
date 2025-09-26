@@ -38,8 +38,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import type { BlogPost } from '@/lib/types';
 import { format } from 'date-fns';
+import type { Timestamp } from 'firebase/firestore';
 
-type BlogPostWithId = BlogPost & { id: string, date: any };
+type BlogPostWithId = BlogPost & { id: string; date: Timestamp };
 
 export default function BlogPostsTable() {
   const { user: adminUser } = useAuth();

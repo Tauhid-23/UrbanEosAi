@@ -10,6 +10,7 @@ import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
+import { auth } from '@/lib/firebase';
 
 const PlantFormSchema = z.object({
   location: z
@@ -117,6 +118,14 @@ export async function createBlogPost(
       message: 'Invalid fields. Failed to create blog post.',
     };
   }
+  
+  // This is a server action, auth should be available
+  // In a real app, you'd get the current user to verify they are an admin
+  const adminUid = auth.currentUser?.uid;
+  if (!adminUid) {
+     return { message: 'Authentication Error: You must be logged in to create a post.' };
+  }
+
 
   try {
     const blogRef = collection(db, 'blogPosts');
@@ -127,7 +136,7 @@ export async function createBlogPost(
     });
     
     await addDoc(collection(db, 'auditLogs'), {
-        adminId: 'admin-placeholder', // TODO: Get actual admin UID
+        adminId: adminUid,
         action: 'createdBlogPost',
         targetId: docRef.id,
         details: `Created blog post: ${validatedFields.data.title}`,
@@ -187,12 +196,17 @@ export async function createProduct(
     };
   }
 
+  const adminUid = auth.currentUser?.uid;
+  if (!adminUid) {
+     return { message: 'Authentication Error: You must be logged in to create a product.' };
+  }
+
   try {
     const productRef = collection(db, 'products');
     const docRef = await addDoc(productRef, validatedFields.data);
 
     await addDoc(collection(db, 'auditLogs'), {
-        adminId: 'admin-placeholder', // TODO: Get actual admin UID
+        adminId: adminUid,
         action: 'createdProduct',
         targetId: docRef.id,
         details: `Created product: ${validatedFields.data.name}`,

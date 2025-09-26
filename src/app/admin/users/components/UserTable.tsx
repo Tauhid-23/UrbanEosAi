@@ -37,6 +37,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
+import type { Timestamp } from 'firebase/firestore';
 
 type UserProfile = {
   id: string;
@@ -44,7 +45,7 @@ type UserProfile = {
   email: string;
   isAdmin: boolean;
   subscriptionPlan: 'free' | 'pro' | 'premium';
-  createdAt: { seconds: number; nanoseconds: number; } | null;
+  createdAt: Timestamp | null;
 };
 
 export default function UserTable() {
@@ -163,7 +164,7 @@ export default function UserTable() {
                 </TableCell>
                  <TableCell className="capitalize">{user.subscriptionPlan}</TableCell>
                  <TableCell>
-                    {user.createdAt ? format(new Date(user.createdAt.seconds * 1000), 'PPP') : 'N/A'}
+                    {user.createdAt ? format(user.createdAt.toDate(), 'PPP') : 'N/A'}
                  </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
