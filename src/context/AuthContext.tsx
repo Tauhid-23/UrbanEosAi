@@ -114,28 +114,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await setDoc(userDocRef, userProfileData);
     
     // Set user in state
-    const { name, ...restOfProfile } = userProfileData;
-    setUser({ ...firebaseUser, displayName: name, ...restOfProfile } as AppUser);
+    const appUser = await fetchUserProfile(firebaseUser);
+    setUser(appUser);
     
     return userCredential;
   };
 
   const signIn = async (email: string, password: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    // onAuthStateChanged will handle the rest
+    const appUser = await fetchUserProfile(userCredential.user);
+    setUser(appUser);
     return userCredential;
   };
 
   const signInWithCustomToken = async (token: string) => {
     const userCredential = await firebaseSignInWithCustomToken(auth, token);
-    // onAuthStateChanged will handle the rest
+    const appUser = await fetchUserProfile(userCredential.user);
+    setUser(appUser);
     return userCredential;
   }
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
-    // The onAuthStateChanged listener will handle fetching the profile and setting the user state.
+    const appUser = await fetchUserProfile(userCredential.user);
+    setUser(appUser);
     return userCredential;
   };
 
