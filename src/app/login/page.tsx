@@ -28,13 +28,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import type { Metadata } from 'next';
-
-// This metadata is not used in client components but good for reference
-// export const metadata: Metadata = {
-//     title: 'Login | UrbanEos AI',
-//     description: 'Login to your UrbanEos AI account.',
-// };
+import { signInWithPassword } from '@/ai/flows/sign-in-with-password';
 
 const formSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
@@ -42,7 +36,7 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
-  const { signIn } = useAuth();
+  const { signInWithCustomToken, signIn } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,14 +52,37 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
+      // First, try the original client-side sign-in
       await signIn(values.email, values.password);
       router.push('/dashboard');
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: error.message,
-      });
+      // If client-side fails (e.g., network error), fall back to server-side flow
+      if (error.code === 'auth/network-request-failed') {
+        console.log('Client-side sign-in failed. Falling back to server-side flow.');
+        try {
+            const result = await signInWithPassword({ email: values.email, password: values.password });
+
+            if (result.success && result.customToken) {
+                await signInWithCustomToken(result.customToken);
+                router.push('/dashboard');
+            } else {
+                throw new Error(result.error || 'Server-side sign-in failed.');
+            }
+        } catch (serverError: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Login Failed',
+                description: serverError.message,
+            });
+        }
+      } else {
+         // Handle other client-side errors (e.g., wrong password)
+         toast({
+            variant: 'destructive',
+            title: 'Login Failed',
+            description: error.message,
+        });
+      }
     } finally {
         setIsSubmitting(false);
     }

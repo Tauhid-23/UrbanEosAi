@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User, updateProfile, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User, updateProfile, GoogleAuthProvider, signInWithPopup, signInWithCustomToken as firebaseSignInWithCustomToken } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 
@@ -17,6 +17,7 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, displayName: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
+  signInWithCustomToken: (token: string) => Promise<any>;
   signInWithGoogle: () => Promise<any>;
   signOut: () => Promise<void>;
 }
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signUp: async () => {},
   signIn: async () => {},
+  signInWithCustomToken: async () => {},
   signInWithGoogle: async () => {},
   signOut: async () => {},
 });
@@ -119,15 +121,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const appUser = await fetchUserProfile(userCredential.user);
-    setUser(appUser);
-    
-    // Update last login time
-    const userDocRef = doc(db, 'users', userCredential.user.uid);
-    await setDoc(userDocRef, { lastLogin: serverTimestamp() }, { merge: true });
-    
+    // onAuthStateChanged will handle the rest
     return userCredential;
   };
+
+  const signInWithCustomToken = async (token: string) => {
+    const userCredential = await firebaseSignInWithCustomToken(auth, token);
+    // onAuthStateChanged will handle the rest
+    return userCredential;
+  }
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
@@ -145,6 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loading,
     signUp,
     signIn,
+    signInWithCustomToken,
     signInWithGoogle,
     signOut: logOut,
   };
