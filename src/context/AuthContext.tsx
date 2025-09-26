@@ -11,12 +11,9 @@ import {
   updateProfile, 
   GoogleAuthProvider, 
   signInWithPopup,
-  signInWithCustomToken
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
-import { signInWithPassword } from '@/ai/flows/sign-in-with-password';
-
 
 // Define an extended User type to include our custom fields
 export interface AppUser extends User {
@@ -122,33 +119,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-      // Primary strategy: use the server-side flow to get a custom token.
-      const { success, customToken, error } = await signInWithPassword({ email, password });
-  
-      if (success && customToken) {
-        const userCredential = await signInWithCustomToken(auth, customToken);
-        const user = userCredential.user;
-        // Update last login timestamp
-        const userDocRef = doc(db, 'users', user.uid);
-        await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
-        const appUser = await fetchUserProfile(user);
-        setUser(appUser); // Manually set user state after custom token sign in
-        return userCredential;
-      }
-  
-      // Fallback for environments where the custom flow might fail, e.g., local dev without Genkit
-      try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        const userDocRef = doc(db, 'users', user.uid);
-        await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
-        const appUser = await fetchUserProfile(user);
-        setUser(appUser);
-        return userCredential;
-      } catch (e) {
-        // If the server flow had an error, prioritize showing it. Otherwise, show the client-side error.
-        throw new Error(error || (e as Error).message);
-      }
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    const userDocRef = doc(db, 'users', user.uid);
+    await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
+    const appUser = await fetchUserProfile(user);
+    setUser(appUser);
+    return userCredential;
   };
 
   const signInWithGoogle = async () => {
