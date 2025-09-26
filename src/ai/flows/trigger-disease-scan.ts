@@ -53,7 +53,7 @@ const triggerDiseaseScanFlow = ai.defineFlow(
         },
         body: JSON.stringify({
           scanId: scanId,
-          imageUrl: imageUrl,
+          fileUrl: imageUrl, // Changed from imageUrl to fileUrl to match function
         }),
       });
 
