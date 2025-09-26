@@ -58,10 +58,15 @@ export default function UserTable() {
   useEffect(() => {
     const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const usersData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as UserProfile[];
+      const usersData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+             // Convert Firestore Timestamp to a serializable format (ISO string)
+            createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
+          } as UserProfile;
+      });
       setUsers(usersData);
       setLoading(false);
     }, (error) => {
@@ -140,7 +145,7 @@ export default function UserTable() {
                 </TableCell>
                  <TableCell className="capitalize">{user.subscriptionPlan}</TableCell>
                  <TableCell>
-                    {user.createdAt ? format(user.createdAt.toDate(), 'PPP') : 'N/A'}
+                    {user.createdAt ? format(new Date(user.createdAt), 'PPP') : 'N/A'}
                  </TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>

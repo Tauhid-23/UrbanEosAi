@@ -24,7 +24,7 @@ export type BlogPost = {
   excerpt: string;
   content: string;
   author: string;
-  date: string;
+  date: string; // Should be ISO string
   imageId: string;
   category: string;
 };
@@ -49,3 +49,12 @@ export type Feature = {
   description: string;
   icon: string;
 };
+
+export type ContactMessage = {
+    id: string;
+    name: string;
+    email: string;
+    message: string;
+    createdAt: Date;
+    status: 'new' | 'replied';
+}

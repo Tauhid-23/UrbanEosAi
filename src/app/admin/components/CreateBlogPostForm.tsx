@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useAuth } from '@/context/AuthContext';
 
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -36,6 +37,7 @@ const formSchema = z.object({
   category: z.string().min(2, 'Category must be at least 2 characters.'),
   author: z.string().min(2, 'Author must be at least 2 characters.'),
   imageId: z.string().min(1, 'Image ID is required.'),
+  adminId: z.string().min(1, 'Admin ID is required.'),
 });
 
 function SubmitButton() {
@@ -50,6 +52,7 @@ function SubmitButton() {
 
 export default function CreateBlogPostForm() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const formRef = useRef<HTMLFormElement>(null);
   const initialState: BlogPostState = { message: null, errors: {} };
   const [state, dispatch] = useActionState(createBlogPost, initialState);
@@ -63,8 +66,16 @@ export default function CreateBlogPostForm() {
       category: 'Beginner Tips',
       author: 'Jane Doe',
       imageId: 'blog-post-1',
+      adminId: user?.uid || '',
     },
   });
+
+   useEffect(() => {
+    // Reset the form's adminId if the user changes
+    if (user) {
+      form.setValue('adminId', user.uid);
+    }
+  }, [user, form]);
 
   useEffect(() => {
     if (state.message && !state.errors) {
@@ -72,16 +83,26 @@ export default function CreateBlogPostForm() {
         title: 'Success!',
         description: state.message,
       });
-      form.reset();
-      formRef.current?.reset();
+      form.reset({
+        ...form.getValues(), // keep some default values
+         title: '',
+         excerpt: '',
+         content: '',
+      });
+      if (formRef.current) {
+        formRef.current.reset();
+        // After reset, we need to re-apply the default values from the form state
+        form.reset(form.formState.defaultValues);
+      }
     } else if (state.message && state.errors) {
       toast({
         variant: 'destructive',
-        title: 'Error',
+        title: 'Error creating post',
         description: state.message,
       });
     }
   }, [state, toast, form]);
+
 
   return (
     <Form {...form}>
@@ -91,6 +112,7 @@ export default function CreateBlogPostForm() {
         onSubmit={form.handleSubmit(() => dispatch(new FormData(formRef.current!)))}
         className="space-y-6"
       >
+        <input type="hidden" {...form.register('adminId')} />
         <FormField
           control={form.control}
           name="title"

@@ -74,13 +74,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       await setDoc(userDocRef, userProfileData);
       
-      const { name, ...restOfProfile } = userProfileData;
-
       return {
         ...firebaseUser,
         uid: firebaseUser.uid,
-        displayName: name,
-        ...restOfProfile
+        displayName: userProfileData.name,
+        isAdmin: userProfileData.isAdmin,
+        subscriptionPlan: userProfileData.subscriptionPlan,
       } as AppUser;
     }
   };
@@ -110,30 +109,46 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       name: displayName,
       email: email,
       subscriptionPlan: 'free' as const,
-      isAdmin: false, // Ensure new users are not admins
+      isAdmin: false, // Ensure new users are not admins by default
       createdAt: serverTimestamp(),
       lastLogin: serverTimestamp(),
     };
     await setDoc(userDocRef, userProfileData);
 
+    const appUser = await fetchUserProfile(userCredential.user);
+    setUser(appUser);
+
     return userCredential;
   };
 
   const signIn = async (email: string, password: string) => {
-    // Primary strategy: use the server-side flow to get a custom token.
-    const { success, customToken, error } = await signInWithPassword({ email, password });
-
-    if (success && customToken) {
-      const userCredential = await signInWithCustomToken(auth, customToken);
-      const user = userCredential.user;
-      // Update last login timestamp
-      const userDocRef = doc(db, 'users', user.uid);
-      await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
-      return userCredential;
-    } else {
-      // If the server flow fails, throw the error from that flow.
-      throw new Error(error || 'An unknown server error occurred.');
-    }
+      // Primary strategy: use the server-side flow to get a custom token.
+      const { success, customToken, error } = await signInWithPassword({ email, password });
+  
+      if (success && customToken) {
+        const userCredential = await signInWithCustomToken(auth, customToken);
+        const user = userCredential.user;
+        // Update last login timestamp
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
+        const appUser = await fetchUserProfile(user);
+        setUser(appUser); // Manually set user state after custom token sign in
+        return userCredential;
+      }
+  
+      // Fallback for environments where the custom flow might fail, e.g., local dev without Genkit
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
+        const appUser = await fetchUserProfile(user);
+        setUser(appUser);
+        return userCredential;
+      } catch (e) {
+        // If the server flow had an error, prioritize showing it. Otherwise, show the client-side error.
+        throw new Error(error || (e as Error).message);
+      }
   };
 
   const signInWithGoogle = async () => {
@@ -158,6 +173,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else {
       await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
     }
+    const appUser = await fetchUserProfile(user);
+    setUser(appUser);
     return result;
   };
 

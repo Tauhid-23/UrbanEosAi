@@ -29,6 +29,8 @@ import {
 } from '@/components/ui/select';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { categories } from '@/lib/data';
+import { useAuth } from '@/context/AuthContext';
+
 
 const formSchema = z.object({
   name: z.string().min(5, 'Product name must be at least 5 characters.'),
@@ -37,6 +39,7 @@ const formSchema = z.object({
   category: z.string().min(2, 'Category is required.'),
   imageId: z.string().min(1, 'Image ID is required.'),
   rating: z.coerce.number().min(0).max(5).optional(),
+  adminId: z.string().min(1, 'Admin ID is required.'),
 });
 
 function SubmitButton() {
@@ -51,6 +54,7 @@ function SubmitButton() {
 
 export default function CreateProductForm() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const formRef = useRef<HTMLFormElement>(null);
   const initialState: ProductState = { message: null, errors: {} };
   const [state, dispatch] = useActionState(createProduct, initialState);
@@ -64,8 +68,15 @@ export default function CreateProductForm() {
       category: 'Seeds',
       imageId: 'product-seeds',
       rating: 4.5,
+      adminId: user?.uid || '',
     },
   });
+
+  useEffect(() => {
+    if (user) {
+      form.setValue('adminId', user.uid);
+    }
+  }, [user, form]);
 
   useEffect(() => {
     if (state.message && !state.errors) {
@@ -75,10 +86,11 @@ export default function CreateProductForm() {
       });
       form.reset();
       formRef.current?.reset();
+       form.reset(form.formState.defaultValues);
     } else if (state.message && state.errors) {
       toast({
         variant: 'destructive',
-        title: 'Error',
+        title: 'Error creating product',
         description: state.message,
       });
     }
@@ -92,6 +104,7 @@ export default function CreateProductForm() {
         onSubmit={form.handleSubmit(() => dispatch(new FormData(formRef.current!)))}
         className="space-y-6"
       >
+        <input type="hidden" {...form.register('adminId')} />
         <FormField
           control={form.control}
           name="name"
@@ -132,7 +145,7 @@ export default function CreateProductForm() {
                   <Input type="number" step="0.01" {...field} />
                 </FormControl>
                 <FormMessage>{state.errors?.price}</FormMessage>
-              </Item>
+              </FormItem>
             )}
           />
           <FormField
@@ -170,7 +183,7 @@ export default function CreateProductForm() {
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a placeholder image" />
-                  </SelectTrigger>
+                  </Trigger>
                 </FormControl>
                 <SelectContent>
                   {PlaceHolderImages.map((img) => (

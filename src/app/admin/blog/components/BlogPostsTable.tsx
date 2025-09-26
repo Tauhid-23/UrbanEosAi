@@ -50,10 +50,15 @@ export default function BlogPostsTable() {
   useEffect(() => {
     const q = query(collection(db, 'blogPosts'), orderBy('date', 'desc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const postsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as BlogPost[];
+      const postsData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            // Convert Firestore Timestamp to a serializable format (ISO string)
+            date: data.date.toDate ? data.date.toDate().toISOString() : data.date,
+            ...data,
+          } as BlogPost;
+      })
       setPosts(postsData);
       setLoading(false);
     }, (error) => {
