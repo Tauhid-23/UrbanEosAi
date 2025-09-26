@@ -36,7 +36,7 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
-  const { signInWithCustomToken, signIn } = useAuth();
+  const { signInWithCustomToken } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,28 +52,23 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      // First, try the original client-side sign-in
-      await signIn(values.email, values.password);
-      router.push('/dashboard');
-    } catch (error: any) {
-      // If client-side fails (e.g., network error), fall back to server-side flow
-      console.log('Client-side sign-in failed. Falling back to server-side flow.');
-      try {
-          const result = await signInWithPassword({ email: values.email, password: values.password });
+      // Use the server-side flow for authentication
+      const result = await signInWithPassword({ email: values.email, password: values.password });
 
-          if (result.success && result.customToken) {
-              await signInWithCustomToken(result.customToken);
-              router.push('/dashboard');
-          } else {
-              throw new Error(result.error || 'Server-side sign-in failed.');
-          }
-      } catch (serverError: any) {
-          toast({
-              variant: 'destructive',
-              title: 'Login Failed',
-              description: serverError.message,
-          });
+      if (result.success && result.customToken) {
+          // If the server-side flow is successful, sign in with the returned custom token
+          await signInWithCustomToken(result.customToken);
+          router.push('/dashboard');
+      } else {
+          // If the server-side flow fails, display the error
+          throw new Error(result.error || 'An unknown error occurred during sign-in.');
       }
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Login Failed',
+            description: error.message,
+        });
     } finally {
         setIsSubmitting(false);
     }

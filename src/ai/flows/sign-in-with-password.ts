@@ -13,7 +13,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import * as admin from 'firebase-admin';
 
 const SignInWithPasswordInputSchema = z.object({
@@ -71,7 +71,7 @@ const signInWithPasswordFlow = ai.defineFlow(
       };
 
     } catch (error: any) {
-      console.error('Error during server-side sign-in:', error.message);
+      console.error('Error during server-side sign-in:', error);
       
       // Map Firebase Admin SDK errors to user-friendly messages
       let errorMessage = 'An unexpected error occurred.';
@@ -79,6 +79,8 @@ const signInWithPasswordFlow = ai.defineFlow(
         errorMessage = 'No user found with this email address.';
       } else if (error.code === 'auth/invalid-email') {
         errorMessage = 'The email address is not valid.';
+      } else if (error.code) {
+        errorMessage = error.message;
       }
 
       return {
