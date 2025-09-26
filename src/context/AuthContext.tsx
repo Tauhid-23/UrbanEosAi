@@ -132,8 +132,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     const userCredential = await signInWithPopup(auth, provider);
-    const appUser = await fetchUserProfile(userCredential.user);
-    setUser(appUser);
+    // The onAuthStateChanged listener will handle fetching the profile and setting the user state.
     return userCredential;
   };
 
