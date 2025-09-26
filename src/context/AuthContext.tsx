@@ -8,6 +8,7 @@ import { auth, db } from '@/lib/firebase';
 
 // Define an extended User type to include our custom fields
 export interface AppUser extends User {
+  uid: string;
   isAdmin: boolean;
   subscriptionPlan: 'free' | 'pro' | 'premium';
 }

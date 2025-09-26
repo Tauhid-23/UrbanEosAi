@@ -10,7 +10,6 @@ import { z } from 'zod';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/lib/firebase';
 
 const PlantFormSchema = z.object({
   location: z
@@ -85,6 +84,7 @@ const BlogPostFormSchema = z.object({
   category: z.string().min(2, 'Category must be at least 2 characters.'),
   author: z.string().min(2, 'Author must be at least 2 characters.'),
   imageId: z.string().min(1, 'Image ID is required.'),
+  adminId: z.string().min(1, 'Admin ID is required for audit.'),
 });
 
 export type BlogPostState = {
@@ -95,6 +95,7 @@ export type BlogPostState = {
     category?: string[];
     author?: string[];
     imageId?: string[];
+    adminId?: string[];
   };
   message?: string | null;
 };
@@ -110,6 +111,7 @@ export async function createBlogPost(
     category: formData.get('category'),
     author: formData.get('author'),
     imageId: formData.get('imageId'),
+    adminId: formData.get('adminId'),
   });
 
   if (!validatedFields.success) {
@@ -119,24 +121,22 @@ export async function createBlogPost(
     };
   }
   
-  // This is a server action, auth should be available
-  // In a real app, you'd get the current user to verify they are an admin
-  const adminUid = auth.currentUser?.uid;
-  if (!adminUid) {
+  const { adminId, ...postData } = validatedFields.data;
+
+  if (!adminId) {
      return { message: 'Authentication Error: You must be logged in to create a post.' };
   }
-
 
   try {
     const blogRef = collection(db, 'blogPosts');
     const docRef = await addDoc(blogRef, {
-      ...validatedFields.data,
+      ...postData,
       slug: slugify(validatedFields.data.title),
       date: serverTimestamp(),
     });
     
     await addDoc(collection(db, 'auditLogs'), {
-        adminId: adminUid,
+        adminId: adminId,
         action: 'createdBlogPost',
         targetId: docRef.id,
         details: `Created blog post: ${validatedFields.data.title}`,
@@ -162,6 +162,7 @@ const ProductFormSchema = z.object({
   category: z.string().min(2, 'Category is required.'),
   imageId: z.string().min(1, 'Image ID is required.'),
   rating: z.coerce.number().min(0).max(5).optional().default(0),
+  adminId: z.string().min(1, 'Admin ID is required for audit.'),
 });
 
 export type ProductState = {
@@ -172,6 +173,7 @@ export type ProductState = {
     category?: string[];
     imageId?: string[];
     rating?: string[];
+    adminId?: string[];
   };
   message?: string | null;
 };
@@ -187,6 +189,7 @@ export async function createProduct(
     category: formData.get('category'),
     imageId: formData.get('imageId'),
     rating: formData.get('rating'),
+    adminId: formData.get('adminId'),
   });
 
   if (!validatedFields.success) {
@@ -196,17 +199,18 @@ export async function createProduct(
     };
   }
 
-  const adminUid = auth.currentUser?.uid;
-  if (!adminUid) {
+  const { adminId, ...productData } = validatedFields.data;
+
+  if (!adminId) {
      return { message: 'Authentication Error: You must be logged in to create a product.' };
   }
 
   try {
     const productRef = collection(db, 'products');
-    const docRef = await addDoc(productRef, validatedFields.data);
+    const docRef = await addDoc(productRef, productData);
 
     await addDoc(collection(db, 'auditLogs'), {
-        adminId: adminUid,
+        adminId: adminId,
         action: 'createdProduct',
         targetId: docRef.id,
         details: `Created product: ${validatedFields.data.name}`,

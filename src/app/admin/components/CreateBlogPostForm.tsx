@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useAuth } from '@/context/AuthContext';
 
 const formSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters.'),
@@ -36,6 +37,7 @@ const formSchema = z.object({
   category: z.string().min(2, 'Category must be at least 2 characters.'),
   author: z.string().min(2, 'Author must be at least 2 characters.'),
   imageId: z.string().min(1, 'Image ID is required.'),
+  adminId: z.string().min(1, 'Admin ID is required.'),
 });
 
 function SubmitButton() {
@@ -49,6 +51,7 @@ function SubmitButton() {
 }
 
 export default function CreateBlogPostForm() {
+  const { user: adminUser } = useAuth();
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const initialState: BlogPostState = { message: null, errors: {} };
@@ -63,8 +66,15 @@ export default function CreateBlogPostForm() {
       category: 'Beginner Tips',
       author: 'Jane Doe',
       imageId: 'blog-post-1',
+      adminId: adminUser?.uid || '',
     },
   });
+
+  useEffect(() => {
+    if (adminUser?.uid) {
+      form.setValue('adminId', adminUser.uid);
+    }
+  }, [adminUser, form]);
 
   useEffect(() => {
     if (state.message && !state.errors) {
@@ -91,6 +101,7 @@ export default function CreateBlogPostForm() {
         onSubmit={form.handleSubmit(() => dispatch(new FormData(formRef.current!)))}
         className="space-y-6"
       >
+        <input type="hidden" {...form.register('adminId')} />
         <FormField
           control={form.control}
           name="title"
@@ -195,5 +206,3 @@ export default function CreateBlogPostForm() {
     </Form>
   );
 }
-
-    
