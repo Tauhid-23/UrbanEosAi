@@ -16,13 +16,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import * as admin from 'firebase-admin';
 
-// Ensure Firebase Admin is initialized only once
-if (!admin.apps.length) {
-  admin.initializeApp({
-    projectId: process.env.GCLOUD_PROJECT,
-  });
-}
-
 const SignInWithPasswordInputSchema = z.object({
   email: z.string().email().describe("The user's email address."),
   password: z.string().describe("The user's password."),
@@ -49,6 +42,14 @@ const signInWithPasswordFlow = ai.defineFlow(
     outputSchema: SignInWithPasswordOutputSchema,
   },
   async ({ email, password }) => {
+    // Initialize Firebase Admin SDK if not already initialized.
+    // This is done inside the flow to prevent module-level conflicts.
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        projectId: process.env.GCLOUD_PROJECT,
+      });
+    }
+    
     try {
       // NOTE: This flow does not actually validate the password against Firebase Auth.
       // A full implementation would require a separate call to a service that can
