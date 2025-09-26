@@ -71,8 +71,6 @@ import withAuth from '@/components/withAuth';
 import { useAuth } from '@/context/AuthContext';
 import { analyzePlantGrowth, AnalyzePlantGrowthOutput } from '@/ai/flows/analyze-plant-growth';
 import { triggerDiseaseScan } from '@/ai/flows/trigger-disease-scan';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 
 const generateWeeksData = () => {
@@ -317,57 +315,37 @@ function DashboardPage() {
   };
 
   const handleDiseaseScan = async (dataUri: string) => {
-    if (!user) {
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Error',
-        description: 'You must be logged in to submit a scan.',
-      });
-      return;
-    }
-
     const scanToast = toast({
-      title: 'Submitting Scan...',
-      description: 'Your plant image is being saved and sent for analysis.',
+      title: 'Submitting for Analysis...',
+      description: 'Your plant image is being sent to the AI for disease detection.',
     });
 
     try {
-      // 1. Save the scan request to Firestore
-      const docRef = await addDoc(collection(db, 'aiScans'), {
-        userId: user.uid,
-        imageUrl: dataUri, // This might be too large for Firestore. A better approach is to store it in Cloud Storage and save the URL here. For now, we'll keep it as is.
-        status: 'pending',
-        result: {},
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-      
-      scanToast.update({ id: scanToast.id, title: 'Scan Saved!', description: 'Your scan has been saved to Firestore.' });
-      
-      // 2. Trigger the server-side webhook call via the Genkit flow
-      const webhookResult = await triggerDiseaseScan({ imageUrl: dataUri, scanId: docRef.id });
+      const result = await triggerDiseaseScan({ imageUrl: dataUri });
 
-      if (webhookResult.status === 'success') {
+      if (result.status === 'success') {
+          scanToast.update({ id: scanToast.id, title: 'Analysis Started!', description: result.message });
+          // Here, you might want to start polling for results from your backend
           toast({
-            title: 'Webhook Triggered!',
-            description: 'The AI detection process has started.',
+            title: 'Scan Submitted!',
+            description: 'Disease detection is in progress. Check the "AI Scans" tab for results.',
           });
       } else {
-        throw new Error(webhookResult.message);
+        throw new Error(result.message);
       }
 
     } catch (error) {
-      console.error('Error during disease scan process:', error);
+      console.error('Error triggering disease scan:', error);
       let errorMessage = 'An unknown error occurred.';
       if (error instanceof Error) {
         errorMessage = error.message;
       }
-      toast({
+      scanToast.update({
+        id: scanToast.id,
         variant: 'destructive',
-        title: 'Scan Process Failed',
+        title: 'Submission Failed',
         description: errorMessage,
       });
-      scanToast.dismiss();
     }
   };
 

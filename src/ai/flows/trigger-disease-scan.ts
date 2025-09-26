@@ -18,7 +18,6 @@ import { z } from 'zod';
 
 const TriggerDiseaseScanInputSchema = z.object({
   imageUrl: z.string().describe('The base64 data URI of the plant image.'),
-  scanId: z.string().describe('The ID of the scan document in Firestore.'),
 });
 export type TriggerDiseaseScanInput = z.infer<typeof TriggerDiseaseScanInputSchema>;
 
@@ -28,7 +27,8 @@ const TriggerDiseaseScanOutputSchema = z.object({
 });
 export type TriggerDiseaseScanOutput = z.infer<typeof TriggerDiseaseScanOutputSchema>;
 
-const N8N_WEBHOOK_URL = 'https://n8n-07w5v6.onrender.com/webhook/disease-detect';
+// IMPORTANT: Replace this with your actual deployed n8n webhook URL
+const N8N_WEBHOOK_URL = 'http://localhost:5678/webhook-test/disease-detect';
 
 export async function triggerDiseaseScan(
   input: TriggerDiseaseScanInput
@@ -42,8 +42,8 @@ const triggerDiseaseScanFlow = ai.defineFlow(
     inputSchema: TriggerDiseaseScanInputSchema,
     outputSchema: TriggerDiseaseScanOutputSchema,
   },
-  async ({ imageUrl, scanId }) => {
-    console.log(`Triggering n8n webhook for scanId: ${scanId}`);
+  async ({ imageUrl }) => {
+    console.log(`Triggering n8n webhook for image.`);
 
     try {
       const response = await fetch(N8N_WEBHOOK_URL, {
@@ -52,8 +52,7 @@ const triggerDiseaseScanFlow = ai.defineFlow(
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          scanId: scanId,
-          fileUrl: imageUrl, // Changed from imageUrl to fileUrl to match function
+          imageUrl: imageUrl,
         }),
       });
 

@@ -53,33 +53,34 @@ export default function AdminDashboardLayout({
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [isAuthorized, setIsAuthorized] = React.useState<boolean | null>(null);
 
   React.useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
+    if (!loading) {
+      if (!user) {
+        router.push('/login');
+      } else {
+        // Once loading is false and user is present, check admin status
+        setIsAuthorized(user.isAdmin);
+      }
     }
   }, [user, loading, router]);
 
 
-  if (loading) {
+  if (loading || isAuthorized === null) {
     return <Loading />;
   }
 
-  if (!user) {
-    // This state is brief before the redirect, but good to have
-    return null;
-  }
-  
-  if (!user.isAdmin) {
+  if (isAuthorized === false) {
     return (
        <div className="container mx-auto flex h-screen flex-col items-center justify-center p-4">
-         <Card className="w-full max-w-md">
+         <Card className="w-full max-w-md text-center">
             <CardHeader>
-                <CardTitle>Access Denied</CardTitle>
+                <CardTitle className="text-2xl">Access Denied</CardTitle>
                 <CardDescription>You do not have permission to view this page.</CardDescription>
             </CardHeader>
             <CardContent>
-                <p>Please contact an administrator if you believe this is a mistake.</p>
+                <p>Please sign in with an administrator account to continue.</p>
                 <Button onClick={() => router.push('/')} className="mt-4 w-full">Go to Homepage</Button>
             </CardContent>
         </Card>
@@ -128,5 +129,3 @@ export default function AdminDashboardLayout({
     </SidebarProvider>
   );
 }
-
-    

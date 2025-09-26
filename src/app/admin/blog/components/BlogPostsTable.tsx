@@ -1,9 +1,9 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, deleteDoc, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from '@/context/AuthContext';
 import {
   Table,
   TableBody,
@@ -38,16 +38,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import type { BlogPost } from '@/lib/types';
 import { format } from 'date-fns';
-import type { Timestamp } from 'firebase/firestore';
-
-type BlogPostWithId = BlogPost & { id: string; date: Timestamp };
 
 export default function BlogPostsTable() {
-  const { user: adminUser } = useAuth();
-  const [posts, setPosts] = useState<BlogPostWithId[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [postToDelete, setPostToDelete] = useState<BlogPostWithId | null>(null);
+  const [postToDelete, setPostToDelete] = useState<BlogPost | null>(null);
 
   const { toast } = useToast();
 
@@ -57,7 +53,7 @@ export default function BlogPostsTable() {
       const postsData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
-      })) as BlogPostWithId[];
+      })) as BlogPost[];
       setPosts(postsData);
       setLoading(false);
     }, (error) => {
@@ -73,27 +69,16 @@ export default function BlogPostsTable() {
     return () => unsubscribe();
   }, [toast]);
 
-  const openDeleteDialog = (post: BlogPostWithId) => {
+  const openDeleteDialog = (post: BlogPost) => {
     setPostToDelete(post);
     setIsDeleteDialogOpen(true);
   };
 
   const handleDeletePost = async () => {
-    if (!postToDelete || !adminUser) return;
+    if (!postToDelete) return;
 
     try {
-      // Delete post document
       await deleteDoc(doc(db, 'blogPosts', postToDelete.id));
-      
-      // Log the audit action
-      await addDoc(collection(db, 'auditLogs'), {
-        adminId: adminUser.uid,
-        action: 'deletedBlogPost',
-        targetId: postToDelete.id,
-        details: `Deleted blog post: ${postToDelete.title}`,
-        timestamp: serverTimestamp(),
-      });
-
       toast({
         title: 'Blog Post Deleted',
         description: `"${postToDelete.title}" has been successfully deleted.`,
@@ -142,9 +127,7 @@ export default function BlogPostsTable() {
                 <TableCell>
                     <Badge variant="outline">{post.category}</Badge>
                 </TableCell>
-                 <TableCell>
-                    {post.date ? format(post.date.toDate(), 'PPP') : 'N/A'}
-                 </TableCell>
+                 <TableCell>{format(new Date(post.date), 'PPP')}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

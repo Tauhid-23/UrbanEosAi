@@ -29,7 +29,6 @@ import {
 } from '@/components/ui/select';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { categories } from '@/lib/data';
-import { useAuth } from '@/context/AuthContext';
 
 const formSchema = z.object({
   name: z.string().min(5, 'Product name must be at least 5 characters.'),
@@ -38,7 +37,6 @@ const formSchema = z.object({
   category: z.string().min(2, 'Category is required.'),
   imageId: z.string().min(1, 'Image ID is required.'),
   rating: z.coerce.number().min(0).max(5).optional(),
-  adminId: z.string().min(1, 'Admin ID is required.'),
 });
 
 function SubmitButton() {
@@ -52,7 +50,6 @@ function SubmitButton() {
 }
 
 export default function CreateProductForm() {
-  const { user: adminUser } = useAuth();
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const initialState: ProductState = { message: null, errors: {} };
@@ -67,16 +64,8 @@ export default function CreateProductForm() {
       category: 'Seeds',
       imageId: 'product-seeds',
       rating: 4.5,
-      adminId: adminUser?.uid || '',
     },
   });
-
-  useEffect(() => {
-    if (adminUser?.uid) {
-      form.setValue('adminId', adminUser.uid);
-    }
-  }, [adminUser, form]);
-
 
   useEffect(() => {
     if (state.message && !state.errors) {
@@ -103,7 +92,6 @@ export default function CreateProductForm() {
         onSubmit={form.handleSubmit(() => dispatch(new FormData(formRef.current!)))}
         className="space-y-6"
       >
-        <input type="hidden" {...form.register('adminId')} />
         <FormField
           control={form.control}
           name="name"
@@ -144,7 +132,7 @@ export default function CreateProductForm() {
                   <Input type="number" step="0.01" {...field} />
                 </FormControl>
                 <FormMessage>{state.errors?.price}</FormMessage>
-              </FormItem>
+              </Item>
             )}
           />
           <FormField

@@ -1,4 +1,3 @@
-import type { Timestamp } from 'firebase/firestore';
 
 export type Testimonial = {
   name: string;
@@ -25,7 +24,7 @@ export type BlogPost = {
   excerpt: string;
   content: string;
   author: string;
-  date: Timestamp | string; // Firestore timestamp or ISO string
+  date: string;
   imageId: string;
   category: string;
 };
@@ -49,13 +48,4 @@ export type Feature = {
   name:string;
   description: string;
   icon: string;
-};
-
-export type ContactMessage = {
-    id: string;
-    name: string;
-    email: string;
-    message: string;
-    createdAt: Timestamp;
-    status: 'new' | 'replied';
 };

@@ -2,13 +2,24 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, User, updateProfile, GoogleAuthProvider, signInWithPopup, signInWithCustomToken as firebaseSignInWithCustomToken } from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { 
+  onAuthStateChanged, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  User, 
+  updateProfile, 
+  GoogleAuthProvider, 
+  signInWithPopup 
+} from 'firebase/auth';
+import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { signInWithPassword } from '@/ai/flows/sign-in-with-password';
+import { signInWithCustomToken } from 'firebase/auth';
+
 
 // Define an extended User type to include our custom fields
 export interface AppUser extends User {
-  uid: string;
   isAdmin: boolean;
   subscriptionPlan: 'free' | 'pro' | 'premium';
 }
@@ -18,7 +29,6 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, displayName: string) => Promise<any>;
   signIn: (email: string, password: string) => Promise<any>;
-  signInWithCustomToken: (token: string) => Promise<any>;
   signInWithGoogle: () => Promise<any>;
   signOut: () => Promise<void>;
 }
@@ -28,7 +38,6 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   signUp: async () => {},
   signIn: async () => {},
-  signInWithCustomToken: async () => {},
   signInWithGoogle: async () => {},
   signOut: async () => {},
 });
@@ -48,21 +57,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return {
         ...firebaseUser,
         uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName,
-        photoURL: firebaseUser.photoURL,
         isAdmin: customData.isAdmin || false,
         subscriptionPlan: customData.subscriptionPlan || 'free',
       } as AppUser;
     } else {
       // If no profile exists, create one with default user role
       const userProfileData = {
-        uid: firebaseUser.uid,
         name: firebaseUser.displayName || 'New User',
         email: firebaseUser.email,
         profileImage: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
         subscriptionPlan: 'free' as const,
-        isAdmin: false, // Default role
+        isAdmin: false, // Default role is NOT admin
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp(),
       };
@@ -72,6 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       return {
         ...firebaseUser,
+        uid: firebaseUser.uid,
         displayName: name,
         ...restOfProfile
       } as AppUser;
@@ -80,6 +86,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setLoading(true);
       if (firebaseUser) {
         const appUser = await fetchUserProfile(firebaseUser);
         setUser(appUser);
@@ -94,52 +101,68 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signUp = async (email: string, password: string, displayName: string) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const firebaseUser = userCredential.user;
+    await updateProfile(userCredential.user, { displayName });
     
-    // Update Firebase Auth profile
-    await updateProfile(firebaseUser, { displayName });
-
-    // Create Firestore user document
-    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    // Explicitly create user profile document on sign-up
+    const userDocRef = doc(db, 'users', userCredential.user.uid);
     const userProfileData = {
-        uid: firebaseUser.uid,
-        name: displayName,
-        email: firebaseUser.email,
-        profileImage: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
-        subscriptionPlan: 'free' as const,
-        isAdmin: false, // Explicitly set role on creation
-        createdAt: serverTimestamp(),
-        lastLogin: serverTimestamp(),
+      name: displayName,
+      email: email,
+      subscriptionPlan: 'free' as const,
+      isAdmin: false, // Ensure new users are not admins
+      createdAt: serverTimestamp(),
+      lastLogin: serverTimestamp(),
     };
     await setDoc(userDocRef, userProfileData);
-    
-    // Set user in state
-    const appUser = await fetchUserProfile(firebaseUser);
-    setUser(appUser);
-    
+
     return userCredential;
   };
 
-  const signIn = async (email: string, password: string) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const appUser = await fetchUserProfile(userCredential.user);
-    setUser(appUser);
-    return userCredential;
-  };
+  const customSignIn = async (email: string, password: string) => {
+    try {
+      const { success, customToken, error } = await signInWithPassword({ email, password });
 
-  const signInWithCustomToken = async (token: string) => {
-    const userCredential = await firebaseSignInWithCustomToken(auth, token);
-    const appUser = await fetchUserProfile(userCredential.user);
-    setUser(appUser);
-    return userCredential;
-  }
+      if (success && customToken) {
+        const userCredential = await signInWithCustomToken(auth, customToken);
+        const user = userCredential.user;
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
+        return userCredential;
+      } else {
+        throw new Error(error || 'An unknown error occurred during sign-in.');
+      }
+    } catch(e) {
+      if (e instanceof Error && e.message.includes('auth/network-request-failed')) {
+        console.warn("Network request failed, trying standard sign in.");
+        return signInWithEmailAndPassword(auth, email, password);
+      }
+      throw e;
+    }
+  };
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    const userCredential = await signInWithPopup(auth, provider);
-    const appUser = await fetchUserProfile(userCredential.user);
-    setUser(appUser);
-    return userCredential;
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+    
+    // Check if a user profile exists, if not, create one.
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (!userDoc.exists()) {
+       const userProfileData = {
+        name: user.displayName,
+        email: user.email,
+        profileImage: user.photoURL,
+        subscriptionPlan: 'free' as const,
+        isAdmin: false,
+        createdAt: serverTimestamp(),
+        lastLogin: serverTimestamp(),
+      };
+      await setDoc(userDocRef, userProfileData);
+    } else {
+      await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
+    }
+    return result;
   };
 
   const logOut = () => {
@@ -150,13 +173,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     loading,
     signUp,
-    signIn,
-    signInWithCustomToken,
+    signIn: customSignIn,
     signInWithGoogle,
     signOut: logOut,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

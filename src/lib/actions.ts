@@ -7,11 +7,8 @@ import {
   SuggestSuitablePlantsOutput,
 } from '@/ai/flows/suggest-suitable-plants';
 import { z } from 'zod';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { revalidatePath } from 'next/cache';
 
-const PlantFormSchema = z.object({
+const FormSchema = z.object({
   location: z
     .string()
     .min(2, { message: 'Location must be at least 2 characters.' }),
@@ -23,7 +20,7 @@ const PlantFormSchema = z.object({
   }),
 });
 
-export type PlantRecommendationState = {
+export type State = {
   errors?: {
     location?: string[];
     space?: string[];
@@ -34,10 +31,10 @@ export type PlantRecommendationState = {
 };
 
 export async function getPlantRecommendations(
-  prevState: PlantRecommendationState,
+  prevState: State,
   formData: FormData
-): Promise<PlantRecommendationState> {
-  const validatedFields = PlantFormSchema.safeParse({
+): Promise<State> {
+  const validatedFields = FormSchema.safeParse({
     location: formData.get('location'),
     space: formData.get('space'),
     experienceLevel: formData.get('experienceLevel'),
@@ -61,170 +58,6 @@ export async function getPlantRecommendations(
       message: 'An error occurred with the AI service. Please try again later.',
       data: null,
       errors: {},
-    };
-  }
-}
-
-const slugify = (text: string) =>
-  text
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-');
-
-// Admin Actions
-const BlogPostFormSchema = z.object({
-  title: z.string().min(5, 'Title must be at least 5 characters.'),
-  excerpt: z.string().min(10, 'Excerpt must be at least 10 characters.'),
-  content: z.string().min(50, 'Content must be at least 50 characters.'),
-  category: z.string().min(2, 'Category must be at least 2 characters.'),
-  author: z.string().min(2, 'Author must be at least 2 characters.'),
-  imageId: z.string().min(1, 'Image ID is required.'),
-  adminId: z.string().min(1, 'Admin ID is required for audit.'),
-});
-
-export type BlogPostState = {
-  errors?: {
-    title?: string[];
-    excerpt?: string[];
-    content?: string[];
-    category?: string[];
-    author?: string[];
-    imageId?: string[];
-    adminId?: string[];
-  };
-  message?: string | null;
-};
-
-export async function createBlogPost(
-  prevState: BlogPostState,
-  formData: FormData
-) {
-  const validatedFields = BlogPostFormSchema.safeParse({
-    title: formData.get('title'),
-    excerpt: formData.get('excerpt'),
-    content: formData.get('content'),
-    category: formData.get('category'),
-    author: formData.get('author'),
-    imageId: formData.get('imageId'),
-    adminId: formData.get('adminId'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Invalid fields. Failed to create blog post.',
-    };
-  }
-  
-  const { adminId, ...postData } = validatedFields.data;
-
-  if (!adminId) {
-     return { message: 'Authentication Error: You must be logged in to create a post.' };
-  }
-
-  try {
-    const blogRef = collection(db, 'blogPosts');
-    const docRef = await addDoc(blogRef, {
-      ...postData,
-      slug: slugify(validatedFields.data.title),
-      date: serverTimestamp(),
-    });
-    
-    await addDoc(collection(db, 'auditLogs'), {
-        adminId: adminId,
-        action: 'createdBlogPost',
-        targetId: docRef.id,
-        details: `Created blog post: ${validatedFields.data.title}`,
-        timestamp: serverTimestamp(),
-    });
-
-    revalidatePath('/blog');
-    revalidatePath('/admin/blog');
-    revalidatePath('/admin');
-    return { message: 'Blog post created successfully!' };
-  } catch (e) {
-    console.error(e);
-    return {
-      message: 'Database Error: Failed to create blog post.',
-    };
-  }
-}
-
-const ProductFormSchema = z.object({
-  name: z.string().min(5, 'Product name must be at least 5 characters.'),
-  description: z.string().min(10, 'Description must be at least 10 characters.'),
-  price: z.coerce.number().min(0, 'Price must be a positive number.'),
-  category: z.string().min(2, 'Category is required.'),
-  imageId: z.string().min(1, 'Image ID is required.'),
-  rating: z.coerce.number().min(0).max(5).optional().default(0),
-  adminId: z.string().min(1, 'Admin ID is required for audit.'),
-});
-
-export type ProductState = {
-  errors?: {
-    name?: string[];
-    description?: string[];
-    price?: string[];
-    category?: string[];
-    imageId?: string[];
-    rating?: string[];
-    adminId?: string[];
-  };
-  message?: string | null;
-};
-
-export async function createProduct(
-  prevState: ProductState,
-  formData: FormData
-) {
-  const validatedFields = ProductFormSchema.safeParse({
-    name: formData.get('name'),
-    description: formData.get('description'),
-    price: formData.get('price'),
-    category: formData.get('category'),
-    imageId: formData.get('imageId'),
-    rating: formData.get('rating'),
-    adminId: formData.get('adminId'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Invalid fields. Failed to create product.',
-    };
-  }
-
-  const { adminId, ...productData } = validatedFields.data;
-
-  if (!adminId) {
-     return { message: 'Authentication Error: You must be logged in to create a product.' };
-  }
-
-  try {
-    const productRef = collection(db, 'products');
-    const docRef = await addDoc(productRef, productData);
-
-    await addDoc(collection(db, 'auditLogs'), {
-        adminId: adminId,
-        action: 'createdProduct',
-        targetId: docRef.id,
-        details: `Created product: ${validatedFields.data.name}`,
-        timestamp: serverTimestamp(),
-    });
-
-    revalidatePath('/marketplace');
-    revalidatePath('/admin/marketplace');
-    revalidatePath('/admin');
-    return { message: 'Product created successfully!' };
-  } catch (e) {
-    console.error(e);
-    return {
-      message: 'Database Error: Failed to create product.',
     };
   }
 }

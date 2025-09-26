@@ -29,7 +29,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { signInWithPassword } from '@/ai/flows/sign-in-with-password';
 
 const formSchema = z.object({
   email: z.string().email('Please enter a valid email address.'),
@@ -37,7 +36,7 @@ const formSchema = z.object({
 });
 
 export default function LoginPage() {
-  const { signInWithCustomToken } = useAuth();
+  const { signIn } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,23 +52,14 @@ export default function LoginPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
-      // Use the server-side flow for authentication
-      const result = await signInWithPassword({ email: values.email, password: values.password });
-
-      if (result.success && result.customToken) {
-          // If the server-side flow is successful, sign in with the returned custom token
-          await signInWithCustomToken(result.customToken);
-          router.push('/dashboard');
-      } else {
-          // If the server-side flow fails, display the error
-          throw new Error(result.error || 'An unknown error occurred during sign-in.');
-      }
+      await signIn(values.email, values.password);
+      router.push('/dashboard');
     } catch (error: any) {
-        toast({
-            variant: 'destructive',
-            title: 'Login Failed',
-            description: error.message,
-        });
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message,
+      });
     } finally {
         setIsSubmitting(false);
     }

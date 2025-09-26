@@ -1,9 +1,9 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, deleteDoc, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { useAuth } from '@/context/AuthContext';
 import {
   Table,
   TableBody,
@@ -37,7 +37,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import type { Timestamp } from 'firebase/firestore';
 
 type UserProfile = {
   id: string;
@@ -45,11 +44,10 @@ type UserProfile = {
   email: string;
   isAdmin: boolean;
   subscriptionPlan: 'free' | 'pro' | 'premium';
-  createdAt: Timestamp | null;
+  createdAt: any;
 };
 
 export default function UserTable() {
-  const { user: adminUser } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -85,32 +83,10 @@ export default function UserTable() {
   };
 
   const handleDeleteUser = async () => {
-    if (!userToDelete || !adminUser) return;
-    
-    // Prevent admin from deleting themselves
-    if (userToDelete.id === adminUser.uid) {
-        toast({
-            variant: 'destructive',
-            title: 'Action Forbidden',
-            description: 'You cannot delete your own account.',
-        });
-        setIsDeleteDialogOpen(false);
-        return;
-    }
+    if (!userToDelete) return;
 
     try {
-      // Delete user document
       await deleteDoc(doc(db, 'users', userToDelete.id));
-      
-      // Log the audit action
-      await addDoc(collection(db, 'auditLogs'), {
-        adminId: adminUser.uid,
-        action: 'deletedUser',
-        targetId: userToDelete.id,
-        details: `Deleted user: ${userToDelete.name} (${userToDelete.email})`,
-        timestamp: serverTimestamp(),
-      });
-
       toast({
         title: 'User Deleted',
         description: `${userToDelete.name} has been successfully deleted.`,
