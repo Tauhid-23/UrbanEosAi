@@ -10,16 +10,17 @@ import {
   User, 
   updateProfile, 
   GoogleAuthProvider, 
-  signInWithPopup 
+  signInWithPopup,
+  signInWithCustomToken
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
 import { signInWithPassword } from '@/ai/flows/sign-in-with-password';
-import { signInWithCustomToken } from 'firebase/auth';
 
 
 // Define an extended User type to include our custom fields
 export interface AppUser extends User {
+  uid: string;
   isAdmin: boolean;
   subscriptionPlan: 'free' | 'pro' | 'premium';
 }
@@ -118,25 +119,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return userCredential;
   };
 
-  const customSignIn = async (email: string, password: string) => {
-    try {
-      const { success, customToken, error } = await signInWithPassword({ email, password });
+  const signIn = async (email: string, password: string) => {
+    // Primary strategy: use the server-side flow to get a custom token.
+    const { success, customToken, error } = await signInWithPassword({ email, password });
 
-      if (success && customToken) {
-        const userCredential = await signInWithCustomToken(auth, customToken);
-        const user = userCredential.user;
-        const userDocRef = doc(db, 'users', user.uid);
-        await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
-        return userCredential;
-      } else {
-        throw new Error(error || 'An unknown error occurred during sign-in.');
-      }
-    } catch(e) {
-      if (e instanceof Error && e.message.includes('auth/network-request-failed')) {
-        console.warn("Network request failed, trying standard sign in.");
-        return signInWithEmailAndPassword(auth, email, password);
-      }
-      throw e;
+    if (success && customToken) {
+      const userCredential = await signInWithCustomToken(auth, customToken);
+      const user = userCredential.user;
+      // Update last login timestamp
+      const userDocRef = doc(db, 'users', user.uid);
+      await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
+      return userCredential;
+    } else {
+      // If the server flow fails, throw the error from that flow.
+      throw new Error(error || 'An unknown server error occurred.');
     }
   };
 
@@ -173,12 +169,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     loading,
     signUp,
-    signIn: customSignIn,
+    signIn: signIn,
     signInWithGoogle,
     signOut: logOut,
   };
 
-  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
