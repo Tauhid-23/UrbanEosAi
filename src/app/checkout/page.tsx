@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -14,9 +15,12 @@ import { products } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import Link from 'next/link';
+import type { Product } from '@/lib/types';
+
 
 export default function CheckoutPage() {
-  const initialCart = products.slice(0, 2);
+  // The products from data don't have an id, so we'll add a temporary one for the key
+  const initialCart: Product[] = products.slice(0, 2).map((p, i) => ({...p, id: `cart-item-${i}`}));
   const [cartItems, setCartItems] = useState(initialCart);
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
