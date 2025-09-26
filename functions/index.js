@@ -32,7 +32,7 @@ exports.onDiseaseImageUpload = functions.storage
       });
 
       // Call n8n webhook
-      const webhookUrl = "https://n8n-07w5v6.onrender.com/webhook-test/disease-detect";
+      const webhookUrl = "https://n8n-07w5v6.onrender.com/webhook/disease-detect";
       const response = await fetch(
         webhookUrl,
         {

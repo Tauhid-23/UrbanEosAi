@@ -16,13 +16,6 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 import * as admin from 'firebase-admin';
 
-// Initialize Firebase Admin SDK if not already initialized
-if (!admin.apps.length) {
-  admin.initializeApp({
-    projectId: process.env.FIREBASE_PROJECT_ID,
-  });
-}
-
 const SignInWithPasswordInputSchema = z.object({
   email: z.string().email().describe("The user's email address."),
   password: z.string().describe("The user's password."),
@@ -49,6 +42,14 @@ const signInWithPasswordFlow = ai.defineFlow(
     outputSchema: SignInWithPasswordOutputSchema,
   },
   async ({ email, password }) => {
+    // Initialize Firebase Admin SDK if not already initialized
+    // Moved inside the flow to prevent module-loading conflicts.
+    if (!admin.apps.length) {
+      admin.initializeApp({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+      });
+    }
+
     try {
       // This is a common but insecure way to "verify" a password for custom auth.
       // A more secure method involves using a backend authentication system that can

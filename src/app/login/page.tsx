@@ -57,31 +57,22 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (error: any) {
       // If client-side fails (e.g., network error), fall back to server-side flow
-      if (error.code === 'auth/network-request-failed') {
-        console.log('Client-side sign-in failed. Falling back to server-side flow.');
-        try {
-            const result = await signInWithPassword({ email: values.email, password: values.password });
+      console.log('Client-side sign-in failed. Falling back to server-side flow.');
+      try {
+          const result = await signInWithPassword({ email: values.email, password: values.password });
 
-            if (result.success && result.customToken) {
-                await signInWithCustomToken(result.customToken);
-                router.push('/dashboard');
-            } else {
-                throw new Error(result.error || 'Server-side sign-in failed.');
-            }
-        } catch (serverError: any) {
-            toast({
-                variant: 'destructive',
-                title: 'Login Failed',
-                description: serverError.message,
-            });
-        }
-      } else {
-         // Handle other client-side errors (e.g., wrong password)
-         toast({
-            variant: 'destructive',
-            title: 'Login Failed',
-            description: error.message,
-        });
+          if (result.success && result.customToken) {
+              await signInWithCustomToken(result.customToken);
+              router.push('/dashboard');
+          } else {
+              throw new Error(result.error || 'Server-side sign-in failed.');
+          }
+      } catch (serverError: any) {
+          toast({
+              variant: 'destructive',
+              title: 'Login Failed',
+              description: serverError.message,
+          });
       }
     } finally {
         setIsSubmitting(false);
