@@ -70,6 +70,9 @@ import {
 import withAuth from '@/components/withAuth';
 import { useAuth } from '@/context/AuthContext';
 import { analyzePlantGrowth, AnalyzePlantGrowthOutput } from '@/ai/flows/analyze-plant-growth';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
 
 const generateWeeksData = () => {
   const data = [];
@@ -313,32 +316,40 @@ function DashboardPage() {
   };
 
   const handleDiseaseScan = async (dataUri: string) => {
-    toast({
-      title: 'Scanning for diseases...',
-      description: 'The AI is analyzing your plant for any issues.',
-    });
-    try {
-      const response = await fetch('http://localhost:5678/webhook-test/a8f26ab9-5478-4dec-b0ce-7c44f2067bc7', {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify({
-          imageData: dataUri,
-        }),
-      });
-
-      // Since this is a no-cors request, we can't inspect the response.
-      // We'll assume it was sent successfully if no network error was thrown.
-      console.log('Webhook request sent.');
-      toast({
-        title: 'Scan Sent!',
-        description: 'The plant image was sent for disease analysis.',
-      });
-    } catch (error) {
-      console.error('Error sending to webhook:', error);
+    if (!user) {
       toast({
         variant: 'destructive',
-        title: 'Scan Failed',
-        description: 'Could not send image for disease analysis.',
+        title: 'Authentication Error',
+        description: 'You must be logged in to submit a scan.',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Submitting Scan...',
+      description: 'Your plant image is being submitted for analysis.',
+    });
+
+    try {
+      await addDoc(collection(db, 'aiScans'), {
+        userId: user.uid,
+        imageUrl: dataUri,
+        status: 'pending',
+        result: {},
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      toast({
+        title: 'Scan Submitted!',
+        description: 'Your plant scan has been submitted and will be processed shortly.',
+      });
+    } catch (error) {
+      console.error('Error submitting scan to Firestore:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Submission Failed',
+        description: 'Could not submit your scan. Please try again.',
       });
     }
   };
