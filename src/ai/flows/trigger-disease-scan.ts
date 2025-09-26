@@ -14,7 +14,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const TriggerDiseaseScanInputSchema = z.object({
   imageUrl: z.string().describe('The base64 data URI of the plant image.'),
@@ -28,7 +28,7 @@ const TriggerDiseaseScanOutputSchema = z.object({
 });
 export type TriggerDiseaseScanOutput = z.infer<typeof TriggerDiseaseScanOutputSchema>;
 
-const N8N_WEBHOOK_URL = 'https://n8n-07w5v6.onrender.com/webhook-test/disease-detect';
+const N8N_WEBHOOK_URL = 'https://n8n-07w5v6.onrender.com/webhook/disease-detect';
 
 export async function triggerDiseaseScan(
   input: TriggerDiseaseScanInput
