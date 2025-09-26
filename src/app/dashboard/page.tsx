@@ -70,6 +70,7 @@ import {
 import withAuth from '@/components/withAuth';
 import { useAuth } from '@/context/AuthContext';
 import { analyzePlantGrowth, AnalyzePlantGrowthOutput } from '@/ai/flows/analyze-plant-growth';
+import { triggerDiseaseScan } from '@/ai/flows/trigger-disease-scan';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
@@ -325,32 +326,48 @@ function DashboardPage() {
       return;
     }
 
-    toast({
+    const scanToast = toast({
       title: 'Submitting Scan...',
-      description: 'Your plant image is being submitted for analysis.',
+      description: 'Your plant image is being saved and sent for analysis.',
     });
 
     try {
-      await addDoc(collection(db, 'aiScans'), {
+      // 1. Save the scan request to Firestore
+      const docRef = await addDoc(collection(db, 'aiScans'), {
         userId: user.uid,
-        imageUrl: dataUri,
+        imageUrl: dataUri, // This might be too large for Firestore. A better approach is to store it in Cloud Storage and save the URL here. For now, we'll keep it as is.
         status: 'pending',
         result: {},
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
+      
+      scanToast.update({ id: scanToast.id, title: 'Scan Saved!', description: 'Your scan has been saved to Firestore.' });
+      
+      // 2. Trigger the server-side webhook call via the Genkit flow
+      const webhookResult = await triggerDiseaseScan({ imageUrl: dataUri, scanId: docRef.id });
 
-      toast({
-        title: 'Scan Submitted!',
-        description: 'Your plant scan has been submitted and will be processed shortly.',
-      });
+      if (webhookResult.status === 'success') {
+          toast({
+            title: 'Webhook Triggered!',
+            description: 'The AI detection process has started.',
+          });
+      } else {
+        throw new Error(webhookResult.message);
+      }
+
     } catch (error) {
-      console.error('Error submitting scan to Firestore:', error);
+      console.error('Error during disease scan process:', error);
+      let errorMessage = 'An unknown error occurred.';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
       toast({
         variant: 'destructive',
-        title: 'Submission Failed',
-        description: 'Could not submit your scan. Please try again.',
+        title: 'Scan Process Failed',
+        description: errorMessage,
       });
+      scanToast.dismiss();
     }
   };
 
@@ -392,11 +409,7 @@ function DashboardPage() {
         if (context) {
             context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
             const dataUri = canvas.toDataURL('image/png');
-            // Assuming capture is for both, you can decide which one to call
-            // or call both if needed. For now, let's call disease scan.
             handleDiseaseScan(dataUri); 
-            // You might also want to call handleImageAnalysis(dataUri) if a single
-            // capture should trigger both analyses.
             setScanMode(false);
         }
     }
