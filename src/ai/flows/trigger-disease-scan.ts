@@ -28,7 +28,7 @@ const TriggerDiseaseScanOutputSchema = z.object({
 });
 export type TriggerDiseaseScanOutput = z.infer<typeof TriggerDiseaseScanOutputSchema>;
 
-const N8N_WEBHOOK_URL = 'http://127.0.0.1:5678/webhook-test/disease-detect';
+const N8N_WEBHOOK_URL = 'http://host.docker.internal:5678/webhook-test/disease-detect';
 
 export async function triggerDiseaseScan(
   input: TriggerDiseaseScanInput
