@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -61,6 +60,8 @@ export default function LoginPage() {
         description = 'Invalid email or password. Please check your credentials and try again.';
       } else if (error.code === 'auth/too-many-requests') {
         description = 'Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later.';
+      } else if (error.code === 'auth/operation-not-allowed') {
+        description = 'Email/Password sign-in is not enabled for this project. Please enable it in the Firebase console.';
       }
       toast({
         variant: 'destructive',
