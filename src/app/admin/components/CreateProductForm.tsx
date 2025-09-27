@@ -66,7 +66,7 @@ export default function CreateProductForm() {
       description: '',
       price: 0,
       category: 'Seeds',
-      imageId: 'product-seeds',
+      imageId: 'product-tomato-seeds',
       rating: 4.5,
       adminId: user?.uid || '',
     },
