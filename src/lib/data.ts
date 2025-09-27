@@ -167,7 +167,7 @@ export const products: Omit<Product, 'id'>[] = [
     price: 29.95,
     description:
       'WiFi-enabled soil moisture sensor that sends alerts to your phone when your plants need water.',
-    imageId: 'product-tools',
+    imageId: 'product-moisture-sensor',
     category: 'Tools',
     rating: 4.5,
   },
@@ -176,7 +176,7 @@ export const products: Omit<Product, 'id'>[] = [
     price: 34.95,
     description:
       'Complete starter kit with basil, cilantro, parsley, and chives. Includes everything you need.',
-    imageId: 'product-kit',
+    imageId: 'product-kit-herbs',
     category: 'Kits',
     tags: ['Organic'],
     rating: 4.8,
@@ -186,8 +186,10 @@ export const products: Omit<Product, 'id'>[] = [
     price: 15.0,
     description:
       'A 10L bag of nutrient-rich, organic potting soil ideal for a wide range of plants.',
-    imageId: 'product-soil',
+    imageId: 'product-potting-mix',
     category: 'Soil & Care',
     rating: 4.7,
   },
 ];
+
+    

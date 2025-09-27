@@ -61,33 +61,27 @@
       "imageHint": "butterfly flower"
     },
     {
-      "id": "product-kit",
-      "description": "A starter kit for urban gardening",
-      "imageUrl": "https://images.unsplash.com/photo-1568633967669-13e645a6a6b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxnYXJkZW5pbmclMjBraXR8ZW58MHx8fHwxNzU4OTY1NDIxfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "gardening kit"
+      "id": "product-kit-herbs",
+      "description": "An indoor herb garden kit with multiple small plants growing",
+      "imageUrl": "https://images.unsplash.com/photo-1604758734320-b4274187e3e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzk3MTh8MHwxfHNlYXJjaHw4fHxpbmRvb3IlMjBoZXJiJTIwZ2FyZGVufGVufDB8fHx8MTcxODk4NjM0N3ww&ixlib=rb-4.0.3&q=80&w=1080",
+      "imageHint": "herb garden"
     },
     {
-      "id": "product-tools",
-      "description": "A set of high-quality gardening tools",
-      "imageUrl": "https://images.unsplash.com/photo-1661712663315-d851d40bcf07?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxnYXJkZW5pbmclMjB0b29sc3xlbnwwfHx8fDE3NTg5NTI1MzF8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "gardening tools"
+      "id": "product-moisture-sensor",
+      "description": "A smart plant moisture sensor stick in the soil of a potted plant",
+      "imageUrl": "https://images.unsplash.com/photo-1629102863158-94e414e6621f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzk3MTh8MHwxfHNlYXJjaHwxfHxwbGFudCUyMG1vaXN0dXJlJTIwc2Vuc29yfGVufDB8fHx8MTcxODk4NjQwNHww&ixlib=rb-4.0.3&q=80&w=1080",
+      "imageHint": "moisture sensor"
     },
     {
-      "id": "product-soil",
-      "description": "A bag of organic potting soil",
-      "imageUrl": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwb3R0aW5nJTIwc29pbHxlbnwwfHx8fDE3NTg5NDc5NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "id": "product-potting-mix",
+      "description": "A person's hands holding rich, dark potting soil",
+      "imageUrl": "https://images.unsplash.com/photo-1603506443689-53e2a2c2b047?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzk3MTh8MHwxfHNlYXJjaHwyfHxwb3R0aW5nJTIwc29pbHxlbnwwfHx8fDE3MTg5ODY0NzJ8MA&ixlib=rb-4.0.3&q=80&w=1080",
       "imageHint": "potting soil"
     },
     {
-      "id": "product-seeds",
-      "description": "Packets of various vegetable seeds",
-      "imageUrl": "https://images.unsplash.com/photo-1615485737646-a0363aba01ec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxzZWVkJTIwcGFja2V0c3xlbnwwfHx8fDE3NTg4ODU2MzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "seed packets"
-    },
-    {
       "id": "product-tomato-seeds",
-      "description": "A variety pack of organic tomato seeds",
-      "imageUrl": "https://images.unsplash.com/photo-1731559997987-97547f597dd3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx0b21hdG8lMjBzZWVkc3xlbnwwfHx8fDE3NTg5NjU0MjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "description": "A handful of small tomato seeds on a wooden surface",
+      "imageUrl": "https://images.unsplash.com/photo-1588187888879-1d4a36f52a78?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzk3MTh8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBzZWVkc3xlbnwwfHx8fDE3MTg5ODY1MDh8MA&ixlib=rb-4.0.3&q=80&w=1080",
       "imageHint": "tomato seeds"
     },
     {
@@ -111,7 +105,7 @@
     {
       "id": "resources-banner",
       "description": "A person reading a book about gardening",
-      "imageUrl": "https://images.unsplash.com/photo-1586850679893-6b7ac980df90?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxnYXJkZW5pbmclMjBib29rfGVufDB8fHx8MTc1ODg5OTM0N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageUrl": "https://images.unsplash.com/photo-1586850679893-6b7ac980df90?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxnYXJkZW5pbmclMjBib29rfGVufDB8fHx8fDE3NTg4OTkzNDd8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "gardening book"
     }
   ]
