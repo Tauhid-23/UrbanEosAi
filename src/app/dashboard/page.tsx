@@ -25,6 +25,16 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   Alert,
   AlertDescription,
   AlertTitle,
@@ -55,6 +65,7 @@ import {
   Sparkles,
   Flower,
   BookOpen,
+  Trash2,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -127,6 +138,9 @@ function DashboardPage() {
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalyzePlantGrowthOutput | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [plantToDelete, setPlantToDelete] = useState<any | null>(null);
+
 
   useEffect(() => {
     // Simulate fetching user's plant data
@@ -428,6 +442,26 @@ function DashboardPage() {
     });
   };
 
+  const openDeleteDialog = (plant: any) => {
+    setPlantToDelete(plant);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeletePlant = () => {
+    if (!plantToDelete) return;
+
+    setPlantGrowth(plantGrowth.filter(p => p.id !== plantToDelete.id));
+
+    toast({
+        title: 'Plant Deleted',
+        description: `"${plantToDelete.name}" has been removed from your garden.`,
+    });
+
+    setIsDeleteDialogOpen(false);
+    setPlantToDelete(null);
+  };
+
+
   return (
     <>
       <div className="bg-secondary/30 min-h-screen-minus-header">
@@ -543,7 +577,13 @@ function DashboardPage() {
                                               <p className="text-xs text-muted-foreground">Temp.</p>
                                           </div>
                                           </div>
-                                          <Button className="w-full" onClick={() => toast({ title: 'Viewing Full History', description: `Details for ${plant.name}`})}>View Full History</Button>
+                                            <div className="flex gap-2">
+                                                <Button className="w-full" onClick={() => toast({ title: 'Viewing Full History', description: `Details for ${plant.name}`})}>View Full History</Button>
+                                                <Button variant="destructive" className="w-full" onClick={() => openDeleteDialog(plant)}>
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    Delete Plant
+                                                </Button>
+                                            </div>
                                       </div>
                                       <div>
                                           <Label className="text-xs text-muted-foreground">Health & Growth Analytics (7 wks)</Label>
@@ -855,6 +895,22 @@ function DashboardPage() {
             </DialogFooter>
         </DialogContent>
       </Dialog>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the plant <span className="font-bold">"{plantToDelete?.name}"</span> from your garden.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePlant} className="bg-destructive hover:bg-destructive/90">
+              Yes, delete plant
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
