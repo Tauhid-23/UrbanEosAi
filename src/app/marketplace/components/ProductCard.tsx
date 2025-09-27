@@ -38,6 +38,7 @@ export default function ProductCard({ product }: { product: Product }) {
             src={image.imageUrl}
             alt={product.name}
             fill
+            unoptimized
             className="object-cover"
             data-ai-hint={image.imageHint}
           />
