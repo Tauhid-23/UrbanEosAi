@@ -3,109 +3,115 @@
     {
       "id": "hero-background",
       "description": "A hand scooping rich, dark soil with a small trowel",
-      "imageUrl": "https://picsum.photos/seed/hero/800/600",
+      "imageUrl": "https://images.unsplash.com/photo-1597868233688-147bbd3a7ff9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxnYXJkZW5pbmclMjBzb2lsfGVufDB8fHx8MTc1ODk2NTQyMXww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "gardening soil"
     },
     {
       "id": "testimonial-1",
       "description": "Portrait of a happy customer",
-      "imageUrl": "https://picsum.photos/seed/t1/100/100",
+      "imageUrl": "https://images.unsplash.com/photo-1635131902146-6957477a4ff4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxwZXJzb24lMjBzbWlsaW5nfGVufDB8fHx8MTc1ODkwMDczMHww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person smiling"
     },
     {
       "id": "testimonial-2",
       "description": "Portrait of another happy customer",
-      "imageUrl": "https://picsum.photos/seed/t2/100/100",
+      "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwZXJzb24lMjBwb3J0cmFpdHxlbnwwfHx8fDE3NTg5MDE5MzN8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "person portrait"
     },
     {
       "id": "testimonial-3",
       "description": "Portrait of a third happy customer",
-      "imageUrl": "https://picsum.photos/seed/t3/100/100",
+      "imageUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxoYXBweSUyMHBlcnNvbnxlbnwwfHx8fDE3NTg4OTg0MDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "happy person"
     },
     {
       "id": "about-us",
       "description": "The Growhaus team working in a greenhouse",
-      "imageUrl": "https://picsum.photos/seed/about/800/600",
+      "imageUrl": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx0ZWFtJTIwd29ya2luZ3xlbnwwfHx8fDE3NTg4ODIxMTB8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "team working"
     },
     {
       "id": "analytics-dashboard",
       "description": "A dashboard showing plant health analytics",
-      "imageUrl": "https://picsum.photos/seed/analytics/1200/800",
+      "imageUrl": "https://images.unsplash.com/photo-1748609160056-7b95f30041f0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxhbmFseXRpY3MlMjBkYXNoYm9hcmR8ZW58MHx8fHwxNzU4OTE2ODEyfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "analytics dashboard"
     },
     {
       "id": "blog-post-1",
       "description": "Close-up of tomatoes growing on a vine",
-      "imageUrl": "https://picsum.photos/seed/blog1/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1703589535874-4fbb03d93479?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxncm93aW5nJTIwdG9tYXRvZXN8ZW58MHx8fHwxNzU4OTY1NDIxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "growing tomatoes"
     },
     {
       "id": "blog-post-2",
       "description": "A person potting a small succulent",
-      "imageUrl": "https://picsum.photos/seed/blog2/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1614597951756-888a08af446b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwb3R0aW5nJTIwc3VjY3VsZW50fGVufDB8fHx8MTc1ODk2NTQyMXww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "potting succulent"
     },
     {
       "id": "blog-post-3",
       "description": "An illustration of a compost cycle",
-      "imageUrl": "https://picsum.photos/seed/blog3/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1719399924262-ebb6f2a8de80?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxjb21wb3N0JTIwY3ljbGV8ZW58MHx8fHwxNzU4OTY1NDIxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "compost cycle"
     },
     {
       "id": "blog-post-4",
       "description": "A beautiful butterfly on a flower",
-      "imageUrl": "https://picsum.photos/seed/blog4/600/400",
+      "imageUrl": "https://images.unsplash.com/photo-1658979349367-5bf6be10ad23?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxidXR0ZXJmbHklMjBmbG93ZXJ8ZW58MHx8fHwxNzU4OTM4MTMxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "butterfly flower"
     },
     {
       "id": "product-kit",
       "description": "A starter kit for urban gardening",
-      "imageUrl": "https://picsum.photos/seed/prod1/400/400",
+      "imageUrl": "https://images.unsplash.com/photo-1568633967669-13e645a6a6b7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxnYXJkZW5pbmclMjBraXR8ZW58MHx8fHwxNzU4OTY1NDIxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "gardening kit"
     },
     {
       "id": "product-tools",
       "description": "A set of high-quality gardening tools",
-      "imageUrl": "https://picsum.photos/seed/prod2/400/400",
+      "imageUrl": "https://images.unsplash.com/photo-1661712663315-d851d40bcf07?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxnYXJkZW5pbmclMjB0b29sc3xlbnwwfHx8fDE3NTg5NTI1MzF8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "gardening tools"
     },
     {
       "id": "product-soil",
       "description": "A bag of organic potting soil",
-      "imageUrl": "https://picsum.photos/seed/prod3/400/400",
+      "imageUrl": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwb3R0aW5nJTIwc29pbHxlbnwwfHx8fDE3NTg5NDc5NDJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "potting soil"
     },
     {
       "id": "product-seeds",
       "description": "Packets of various vegetable seeds",
-      "imageUrl": "https://picsum.photos/seed/prod4/400/400",
+      "imageUrl": "https://images.unsplash.com/photo-1615485737646-a0363aba01ec?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxzZWVkJTIwcGFja2V0c3xlbnwwfHx8fDE3NTg4ODU2MzZ8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "seed packets"
+    },
+    {
+      "id": "product-tomato-seeds",
+      "description": "A variety pack of organic tomato seeds",
+      "imageUrl": "https://images.unsplash.com/photo-1731559997987-97547f597dd3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHx0b21hdG8lMjBzZWVkc3xlbnwwfHx8fDE3NTg5NjU0MjF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "tomato seeds"
     },
     {
       "id": "user-plant-1",
       "description": "A healthy snake plant in a ceramic pot",
-      "imageUrl": "https://picsum.photos/seed/plant1/400/400",
+      "imageUrl": "https://images.unsplash.com/photo-1547516508-e910d368d995?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzbmFrZSUyMHBsYW50fGVufDB8fHx8MTc1ODk2NTQyMXww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "snake plant"
     },
     {
       "id": "user-plant-2",
       "description": "A fiddle leaf fig tree by a window",
-      "imageUrl": "https://picsum.photos/seed/plant2/400/400",
+      "imageUrl": "https://images.unsplash.com/photo-1638741280384-36839c90f329?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxmaWRkbGUtbGVhZiUyMGZpZ3xlbnwwfHx8fDE3NTg4Njk4NzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "fiddle-leaf fig"
     },
     {
       "id": "user-plant-3",
       "description": "A collection of small succulents on a shelf",
-      "imageUrl": "https://picsum.photos/seed/plant3/400/400",
+      "imageUrl": "https://images.unsplash.com/photo-1731717752127-13f9ad1d5c12?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzdWNjdWxlbnRzJTIwc2hlbGZ8ZW58MHx8fHwxNzU4OTY1NDIxfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "succulents shelf"
     },
     {
       "id": "resources-banner",
       "description": "A person reading a book about gardening",
-      "imageUrl": "https://picsum.photos/seed/resources/1200/400",
+      "imageUrl": "https://images.unsplash.com/photo-1586850679893-6b7ac980df90?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxnYXJkZW5pbmclMjBib29rfGVufDB8fHx8MTc1ODg5OTM0N3ww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "gardening book"
     }
   ]

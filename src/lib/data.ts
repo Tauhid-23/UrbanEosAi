@@ -157,7 +157,7 @@ export const products: Omit<Product, 'id'>[] = [
     name: 'Organic Tomato Seeds Variety Pack',
     price: 12.95,
     description: 'Premium heirloom tomato seeds perfect for container gardening.',
-    imageId: 'product-seeds',
+    imageId: 'product-tomato-seeds',
     category: 'Seeds',
     tags: ['Organic'],
     rating: 4.8,
