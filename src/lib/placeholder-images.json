@@ -63,25 +63,25 @@
     {
       "id": "product-kit-herbs",
       "description": "An indoor herb garden kit with multiple small plants growing",
-      "imageUrl": "https://images.unsplash.com/photo-1604758734320-b4274187e3e4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzk3MTh8MHwxfHNlYXJjaHw4fHxpbmRvb3IlMjBoZXJiJTIwZ2FyZGVufGVufDB8fHx8MTcxODk4NjM0N3ww&ixlib=rb-4.0.3&q=80&w=1080",
+      "imageUrl": "https://storage.googleapis.com/project-spark-349216.appspot.com/a42b153e-5d15-4fa7-bfb8-e04f05ac3775",
       "imageHint": "herb garden"
     },
     {
       "id": "product-moisture-sensor",
       "description": "A smart plant moisture sensor stick in the soil of a potted plant",
-      "imageUrl": "https://images.unsplash.com/photo-1629102863158-94e414e6621f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzk3MTh8MHwxfHNlYXJjaHwxfHxwbGFudCUyMG1vaXN0dXJlJTIwc2Vuc29yfGVufDB8fHx8MTcxODk4NjQwNHww&ixlib=rb-4.0.3&q=80&w=1080",
+      "imageUrl": "https://storage.googleapis.com/project-spark-349216.appspot.com/98504f7a-8f83-4a11-8207-695029315d03",
       "imageHint": "moisture sensor"
     },
     {
       "id": "product-potting-mix",
       "description": "A person's hands holding rich, dark potting soil",
-      "imageUrl": "https://images.unsplash.com/photo-1603506443689-53e2a2c2b047?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzk3MTh8MHwxfHNlYXJjaHwyfHxwb3R0aW5nJTIwc29pbHxlbnwwfHx8fDE3MTg5ODY0NzJ8MA&ixlib=rb-4.0.3&q=80&w=1080",
+      "imageUrl": "https://storage.googleapis.com/project-spark-349216.appspot.com/00e82c5a-3507-4e05-89f5-46b539c27773",
       "imageHint": "potting soil"
     },
     {
       "id": "product-tomato-seeds",
       "description": "A handful of small tomato seeds on a wooden surface",
-      "imageUrl": "https://images.unsplash.com/photo-1588187888879-1d4a36f52a78?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3wzNzk3MTh8MHwxfHNlYXJjaHwxfHx0b21hdG8lMjBzZWVkc3xlbnwwfHx8fDE3MTg5ODY1MDh8MA&ixlib=rb-4.0.3&q=80&w=1080",
+      "imageUrl": "https://storage.googleapis.com/project-spark-349216.appspot.com/f73f8475-4726-4752-95a6-98f56e9c490e",
       "imageHint": "tomato seeds"
     },
     {
