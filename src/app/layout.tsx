@@ -37,7 +37,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               window.chatbaseConfig = {
-                initialMessage: "Welcome! I am Dr. Green. Please tell me the name of your plant and describe any symptoms you are seeing."
+                initialMessage: "Hi! How can I help you ?"
               }
             `,
           }}
