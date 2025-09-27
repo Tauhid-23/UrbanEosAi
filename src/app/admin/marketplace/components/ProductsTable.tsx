@@ -2,9 +2,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, deleteDoc, addDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { useAuth } from '@/context/AuthContext';
 import {
   Table,
   TableBody,
@@ -38,9 +35,11 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
+import { products as fallbackProducts } from '@/lib/data';
+
+const staticProducts = fallbackProducts.map((p, i) => ({...p, id: `product-${i}`}));
 
 export default function ProductsTable() {
-  const { user: adminUser } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -49,26 +48,10 @@ export default function ProductsTable() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const q = query(collection(db, 'products'), orderBy('name', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const productsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Product[];
-      setProducts(productsData);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching products:", error);
-      toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to fetch products.',
-      });
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [toast]);
+    // In demo mode, just use static data
+    setProducts(staticProducts);
+    setLoading(false);
+  }, []);
 
   const openDeleteDialog = (product: Product) => {
     setProductToDelete(product);
@@ -76,36 +59,16 @@ export default function ProductsTable() {
   };
 
   const handleDeleteProduct = async () => {
-    if (!productToDelete || !adminUser) return;
+    if (!productToDelete) return;
+    setProducts(products.filter(p => p.id !== productToDelete.id));
 
-    try {
-      // Delete product document
-      await deleteDoc(doc(db, 'products', productToDelete.id));
-      
-      // Log the audit action
-      await addDoc(collection(db, 'auditLogs'), {
-        adminId: adminUser.uid,
-        action: 'deletedProduct',
-        targetId: productToDelete.id,
-        details: `Deleted product: ${productToDelete.name}`,
-        timestamp: serverTimestamp(),
-      });
-
-      toast({
-        title: 'Product Deleted',
+    toast({
+        title: '(Demo) Product Deleted',
         description: `${productToDelete.name} has been successfully deleted.`,
-      });
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to delete product.',
-      });
-    } finally {
-        setIsDeleteDialogOpen(false);
-        setProductToDelete(null);
-    }
+    });
+    
+    setIsDeleteDialogOpen(false);
+    setProductToDelete(null);
   };
 
   if (loading) {
@@ -151,7 +114,7 @@ export default function ProductsTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => toast({ title: 'Edit Product (Coming Soon)', description: `This will allow editing ${product.name}.`})}>
+                      <DropdownMenuItem onClick={() => toast({ title: 'Edit Product (Demo)', description: `This would allow editing ${product.name}.`})}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit Product
                       </DropdownMenuItem>

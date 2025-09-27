@@ -2,18 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { 
-  onAuthStateChanged, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  User, 
-  updateProfile, 
-  GoogleAuthProvider, 
-  signInWithPopup,
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
+import type { User } from 'firebase/auth';
 
 // Define an extended User type to include our custom fields
 export interface AppUser extends User {
@@ -40,132 +29,77 @@ const AuthContext = createContext<AuthContextType>({
   signOut: async () => {},
 });
 
+// Create a mock user for the static demo
+const createMockUser = (): AppUser => ({
+  uid: 'mock-user-id',
+  email: 'demo@example.com',
+  displayName: 'Demo User',
+  photoURL: 'https://i.pravatar.cc/150?u=mock-user-id',
+  isAdmin: true, // Set to true to allow access to admin for demo purposes
+  subscriptionPlan: 'pro',
+  // Add other required User properties with mock data
+  emailVerified: true,
+  isAnonymous: false,
+  metadata: {},
+  providerData: [],
+  providerId: 'password',
+  tenantId: null,
+  delete: async () => {},
+  getIdToken: async () => 'mock-token',
+  getIdTokenResult: async () => ({} as any),
+  reload: async () => {},
+  toJSON: () => ({}),
+});
+
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // This function fetches the Firestore user profile and merges it with the Firebase Auth user object.
-  const fetchUserProfile = async (firebaseUser: User): Promise<AppUser> => {
-    const userDocRef = doc(db, 'users', firebaseUser.uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists()) {
-      const customData = userDoc.data();
-      // Merge the firebase user object with the custom data from firestore
-      return {
-        ...firebaseUser,
-        uid: firebaseUser.uid,
-        isAdmin: customData.isAdmin || false,
-        subscriptionPlan: customData.subscriptionPlan || 'free',
-      } as AppUser;
-    } else {
-      // If no profile exists, create one with default user role
-      const userProfileData = {
-        name: firebaseUser.displayName || 'New User',
-        email: firebaseUser.email,
-        profileImage: firebaseUser.photoURL || `https://i.pravatar.cc/150?u=${firebaseUser.uid}`,
-        subscriptionPlan: 'free' as const,
-        isAdmin: false, // Default role is NOT admin
-        createdAt: serverTimestamp(),
-        lastLogin: serverTimestamp(),
-      };
-      await setDoc(userDocRef, userProfileData);
-      
-      return {
-        ...firebaseUser,
-        uid: firebaseUser.uid,
-        displayName: userProfileData.name,
-        isAdmin: userProfileData.isAdmin,
-        subscriptionPlan: userProfileData.subscriptionPlan,
-      } as AppUser;
-    }
-  };
-
+  // In the static demo, we immediately set a mock user after a short delay
+  // to simulate a logged-in state for accessing the dashboard.
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
-      if (firebaseUser) {
-        const appUser = await fetchUserProfile(firebaseUser);
-        setUser(appUser);
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
+    const sessionUser = sessionStorage.getItem('demo-user');
+    if (sessionUser) {
+      setUser(createMockUser());
+    }
+    setLoading(false);
   }, []);
 
+  const setDemoUser = () => {
+    const mockUser = createMockUser();
+    setUser(mockUser);
+    sessionStorage.setItem('demo-user', JSON.stringify(mockUser));
+  };
+
   const signUp = async (email: string, password: string, displayName: string) => {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    await updateProfile(userCredential.user, { displayName });
-    
-    // Explicitly create user profile document on sign-up
-    const userDocRef = doc(db, 'users', userCredential.user.uid);
-    const userProfileData = {
-      name: displayName,
-      email: email,
-      subscriptionPlan: 'free' as const,
-      isAdmin: false, // Ensure new users are not admins by default
-      createdAt: serverTimestamp(),
-      lastLogin: serverTimestamp(),
-    };
-    await setDoc(userDocRef, userProfileData);
-
-    const appUser = await fetchUserProfile(userCredential.user);
-    setUser(appUser);
-
-    return userCredential;
+    setDemoUser();
+    return Promise.resolve();
   };
 
   const signIn = async (email: string, password: string) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    const userDocRef = doc(db, 'users', user.uid);
-    await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
-    const appUser = await fetchUserProfile(user);
-    setUser(appUser);
-    return userCredential;
+    setDemoUser();
+    return Promise.resolve();
   };
-
+  
   const signInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-    
-    // Check if a user profile exists, if not, create one.
-    const userDocRef = doc(db, 'users', user.uid);
-    const userDoc = await getDoc(userDocRef);
-    if (!userDoc.exists()) {
-       const userProfileData = {
-        name: user.displayName,
-        email: user.email,
-        profileImage: user.photoURL,
-        subscriptionPlan: 'free' as const,
-        isAdmin: false,
-        createdAt: serverTimestamp(),
-        lastLogin: serverTimestamp(),
-      };
-      await setDoc(userDocRef, userProfileData);
-    } else {
-      await updateDoc(userDocRef, { lastLogin: serverTimestamp() });
-    }
-    const appUser = await fetchUserProfile(user);
-    setUser(appUser);
-    return result;
-  };
+    setDemoUser();
+    return Promise.resolve();
+  }
 
-  const logOut = () => {
-    return signOut(auth);
+  const signOut = async () => {
+    setUser(null);
+    sessionStorage.removeItem('demo-user');
+    return Promise.resolve();
   };
 
   const value = {
     user,
     loading,
     signUp,
-    signIn: signIn,
+    signIn,
     signInWithGoogle,
-    signOut: logOut,
+    signOut,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

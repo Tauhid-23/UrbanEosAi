@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { categories, features, products as fallbackProducts } from '@/lib/data';
@@ -21,24 +19,9 @@ import {
 import type { Product } from '@/lib/types';
 import Link from 'next/link';
 
+// For static demo, use fallback data directly.
 async function getProducts(): Promise<Product[]> {
-    try {
-        const productsCollection = collection(db, 'products');
-        const querySnapshot = await getDocs(productsCollection);
-
-        if (querySnapshot.empty) {
-            return fallbackProducts.map((p, i) => ({ ...p, id: `prod-${i + 1}` }));
-        }
-
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        } as Product));
-
-    } catch (error) {
-        console.error("Error fetching products:", error);
-        return fallbackProducts.map((p, i) => ({ ...p, id: `prod-${i + 1}` }));
-    }
+    return fallbackProducts.map((p, i) => ({ ...p, id: `prod-${i + 1}` }));
 }
 
 

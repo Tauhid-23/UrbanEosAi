@@ -2,8 +2,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import {
   Table,
   TableBody,
@@ -38,6 +36,15 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import type { BlogPost } from '@/lib/types';
 import { format } from 'date-fns';
+import { blogPosts as fallbackBlogPosts } from '@/lib/data';
+
+// Add id to fallback data for demo
+const staticBlogPosts = fallbackBlogPosts.map((p, i) => ({
+    ...p,
+    id: `post-${i}`,
+    slug: p.title.toLowerCase().replace(/\s+/g, '-'),
+    date: new Date(Date.now() - (i * 1000 * 60 * 60 * 24 * 3)).toISOString(),
+}));
 
 export default function BlogPostsTable() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -48,31 +55,10 @@ export default function BlogPostsTable() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const q = query(collection(db, 'blogPosts'), orderBy('date', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const postsData = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            // Convert Firestore Timestamp to a serializable format (ISO string)
-            date: data.date.toDate ? data.date.toDate().toISOString() : data.date,
-            ...data,
-          } as BlogPost;
-      })
-      setPosts(postsData);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching blog posts:", error);
-      toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to fetch blog posts.',
-      });
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [toast]);
+    // In demo mode, just use static data
+    setPosts(staticBlogPosts);
+    setLoading(false);
+  }, []);
 
   const openDeleteDialog = (post: BlogPost) => {
     setPostToDelete(post);
@@ -81,24 +67,15 @@ export default function BlogPostsTable() {
 
   const handleDeletePost = async () => {
     if (!postToDelete) return;
+    setPosts(posts.filter(p => p.id !== postToDelete.id));
 
-    try {
-      await deleteDoc(doc(db, 'blogPosts', postToDelete.id));
-      toast({
-        title: 'Blog Post Deleted',
+    toast({
+        title: '(Demo) Blog Post Deleted',
         description: `"${postToDelete.title}" has been successfully deleted.`,
-      });
-    } catch (error) {
-      console.error('Error deleting post:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to delete blog post.',
-      });
-    } finally {
-        setIsDeleteDialogOpen(false);
-        setPostToDelete(null);
-    }
+    });
+
+    setIsDeleteDialogOpen(false);
+    setPostToDelete(null);
   };
 
   if (loading) {
@@ -143,7 +120,7 @@ export default function BlogPostsTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => toast({ title: 'Edit Post (Coming Soon)', description: `This will allow editing ${post.title}.`})}>
+                      <DropdownMenuItem onClick={() => toast({ title: 'Edit Post (Demo)', description: `This would allow editing ${post.title}.`})}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit Post
                       </DropdownMenuItem>

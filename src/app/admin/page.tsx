@@ -9,12 +9,17 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useEffect, useState } from 'react';
-import { collection, getCountFromServer, query, orderBy, limit, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { ContactMessage } from '@/lib/types';
 import { formatDistanceToNow } from 'date-fns';
 import { Users, Sprout, ShoppingBasket, Newspaper } from 'lucide-react';
+
+const staticMessages: ContactMessage[] = [
+    {id: '1', name: 'Alice', email: 'alice@example.com', message: 'I have a question about my order.', createdAt: new Date(Date.now() - 1000 * 60 * 5), status: 'new'},
+    {id: '2', name: 'Bob', email: 'bob@example.com', message: 'Great app! Just wanted to say thanks.', createdAt: new Date(Date.now() - 1000 * 60 * 60), status: 'new'},
+    {id: '3', name: 'Charlie', email: 'charlie@example.com', message: 'My plant looks sick, can you help?', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24), status: 'new'},
+]
+
 
 export default function AdminDashboardPage() {
   const [userCount, setUserCount] = useState(0);
@@ -27,44 +32,16 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     const fetchCounts = async () => {
       setLoading(true);
-      try {
-        const usersCol = collection(db, 'users');
-        const plantsCol = collection(db, 'plants');
-        const ordersCol = collection(db, 'orders');
-        const blogPostsCol = collection(db, 'blogPosts');
-        const messagesQuery = query(collection(db, 'contactMessages'), orderBy('createdAt', 'desc'), limit(5));
+      // Simulate fetching data for demo
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setUserCount(125);
+      setPlantCount(340);
+      setOrderCount(89);
+      setBlogPostCount(12);
+      setRecentMessages(staticMessages);
 
-        const [
-          usersSnapshot,
-          plantsSnapshot,
-          ordersSnapshot,
-          blogPostsSnapshot,
-          messagesSnapshot,
-        ] = await Promise.all([
-          getCountFromServer(usersCol),
-          getCountFromServer(plantsCol),
-          getCountFromServer(ordersCol),
-          getCountFromServer(blogPostsCol),
-          getDocs(messagesQuery),
-        ]);
-
-        setUserCount(usersSnapshot.data().count);
-        setPlantCount(plantsSnapshot.data().count);
-        setOrderCount(ordersSnapshot.data().count);
-        setBlogPostCount(blogPostsSnapshot.data().count);
-        
-        const messages = messagesSnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt.toDate(),
-        })) as ContactMessage[];
-        setRecentMessages(messages);
-
-      } catch (error) {
-        console.error("Error fetching admin dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(false);
     };
 
     fetchCounts();
@@ -138,5 +115,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-
-    

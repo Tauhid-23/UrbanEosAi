@@ -52,22 +52,20 @@ export default function SignupPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    try {
-      await signUp(values.email, values.password, values.name);
-      toast({
-        title: 'Account Created!',
-        description: "You've been successfully signed up.",
-      });
-      router.push('/dashboard');
-    } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Sign-up Failed',
-        description: error.message,
-      });
-    } finally {
-        setIsSubmitting(false);
-    }
+    
+    // Simulate API call for demo
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Call the mocked signUp function
+    await signUp(values.email, values.password, values.name);
+
+    toast({
+      title: 'Account Created!',
+      description: "This is a static demo. Redirecting to dashboard.",
+    });
+
+    router.push('/dashboard');
+    setIsSubmitting(false);
   }
 
   return (

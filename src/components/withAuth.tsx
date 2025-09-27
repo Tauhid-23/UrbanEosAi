@@ -12,7 +12,10 @@ const withAuth = <P extends object>(Component: React.ComponentType<P>) => {
     const router = useRouter();
 
     useEffect(() => {
-      if (!loading && !user) {
+      // In the static demo, we check for the session storage item.
+      // If it doesn't exist, we redirect to login.
+      const sessionUser = sessionStorage.getItem('demo-user');
+      if (!loading && !sessionUser) {
         router.push('/login');
       }
     }, [user, loading, router]);
@@ -21,7 +24,9 @@ const withAuth = <P extends object>(Component: React.ComponentType<P>) => {
       return <Loading />;
     }
     
-    if (!user) {
+    // The user object might be null on initial load, but the session storage check handles redirection.
+    // If the session exists, we can render the component.
+    if (!user && !sessionStorage.getItem('demo-user')) {
       return null;
     }
 

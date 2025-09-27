@@ -1,36 +1,29 @@
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Badge } from '@/components/ui/badge';
 import type { Metadata, ResolvingMetadata } from 'next';
 import type { BlogPost } from '@/lib/types';
 import { format } from 'date-fns';
+import { blogPosts as fallbackBlogPosts } from '@/lib/data';
 
 type Props = {
   params: { slug: string };
 };
 
+// For the static demo, we find the post from the static data.
 async function getPost(slug: string): Promise<BlogPost | null> {
-    try {
-        const postsCollection = collection(db, 'blogPosts');
-        const q = query(postsCollection, where('slug', '==', slug));
-        const querySnapshot = await getDocs(q);
+    const postData = fallbackBlogPosts.find(p => p.title.toLowerCase().replace(/\s+/g, '-') === slug);
 
-        if (querySnapshot.empty) {
-            return null;
-        }
-
-        const docData = querySnapshot.docs[0].data();
-        return {
-            ...docData,
-            date: (docData.date as Timestamp).toDate().toISOString(),
-        } as BlogPost;
-
-    } catch (error) {
-        console.error("Error fetching post: ", error);
+    if (!postData) {
         return null;
+    }
+
+    return {
+        ...postData,
+        id: slug,
+        slug: slug,
+        date: new Date().toISOString(),
     }
 }
 

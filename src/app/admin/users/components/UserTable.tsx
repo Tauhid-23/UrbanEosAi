@@ -2,8 +2,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, deleteDoc, query, orderBy } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import {
   Table,
   TableBody,
@@ -47,6 +45,14 @@ type UserProfile = {
   createdAt: any;
 };
 
+// Static data for the demo
+const staticUsers: UserProfile[] = [
+    { id: '1', name: 'Admin User', email: 'admin@example.com', isAdmin: true, subscriptionPlan: 'pro', createdAt: new Date().toISOString() },
+    { id: '2', name: 'John Doe', email: 'john.doe@example.com', isAdmin: false, subscriptionPlan: 'free', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString() },
+    { id: '3', name: 'Jane Smith', email: 'jane.smith@example.com', isAdmin: false, subscriptionPlan: 'premium', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString() },
+];
+
+
 export default function UserTable() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,31 +62,10 @@ export default function UserTable() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const q = query(collection(db, 'users'), orderBy('createdAt', 'desc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const usersData = snapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            ...data,
-             // Convert Firestore Timestamp to a serializable format (ISO string)
-            createdAt: data.createdAt?.toDate ? data.createdAt.toDate().toISOString() : new Date().toISOString(),
-          } as UserProfile;
-      });
-      setUsers(usersData);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching users:", error);
-      toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to fetch users.',
-      });
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [toast]);
+    // In demo mode, just use static data
+    setUsers(staticUsers);
+    setLoading(false);
+  }, []);
 
   const openDeleteDialog = (user: UserProfile) => {
     setUserToDelete(user);
@@ -90,23 +75,15 @@ export default function UserTable() {
   const handleDeleteUser = async () => {
     if (!userToDelete) return;
 
-    try {
-      await deleteDoc(doc(db, 'users', userToDelete.id));
-      toast({
-        title: 'User Deleted',
-        description: `${userToDelete.name} has been successfully deleted.`,
-      });
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to delete user.',
-      });
-    } finally {
-        setIsDeleteDialogOpen(false);
-        setUserToDelete(null);
-    }
+    // Simulate deletion
+    setUsers(users.filter(u => u.id !== userToDelete.id));
+    toast({
+      title: '(Demo) User Deleted',
+      description: `${userToDelete.name} has been removed.`,
+    });
+    
+    setIsDeleteDialogOpen(false);
+    setUserToDelete(null);
   };
 
   if (loading) {
@@ -157,7 +134,7 @@ export default function UserTable() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuItem onClick={() => toast({ title: 'Edit User (Coming Soon)', description: `This will allow editing ${user.name}.`})}>
+                      <DropdownMenuItem onClick={() => toast({ title: 'Edit User (Demo)', description: `This would allow editing ${user.name}.`})}>
                         <Edit className="mr-2 h-4 w-4" />
                         Edit Role
                       </DropdownMenuItem>
