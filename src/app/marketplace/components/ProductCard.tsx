@@ -14,13 +14,16 @@ import type { Product } from '@/lib/types';
 import { ShoppingCart, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/context/CartContext';
 
 export default function ProductCard({ product }: { product: Product }) {
   const image = PlaceHolderImages.find((p) => p.id === product.imageId);
   const { toast } = useToast();
+  const { addToCart } = useCart();
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    addToCart(product);
     toast({
       title: 'Added to Cart!',
       description: `${product.name} has been added to your cart.`,

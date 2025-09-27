@@ -15,9 +15,11 @@ import {
   Star,
   Ship,
   Loader2,
+  ShoppingCart,
 } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import Link from 'next/link';
+import { useCart } from '@/context/CartContext';
 
 // For static demo, use fallback data directly.
 async function getProducts(): Promise<Product[]> {
@@ -30,6 +32,7 @@ export default function MarketplacePage() {
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchTerm, setSearchTerm] = useState('');
+  const { cartItems, cartTotal } = useCart();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -89,7 +92,10 @@ export default function MarketplacePage() {
               />
             </div>
             <Link href="/checkout">
-              <Button variant="outline">Cart (2) $47.90</Button>
+              <Button variant="outline">
+                <ShoppingCart className="mr-2 h-4 w-4" />
+                Cart ({cartItems.length}) ${cartTotal.toFixed(2)}
+                </Button>
             </Link>
           </div>
           <div className="flex flex-wrap gap-2 justify-center mt-6">

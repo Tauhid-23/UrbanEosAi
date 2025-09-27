@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/context/CartContext';
+import { Badge } from '../ui/badge';
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -35,6 +37,7 @@ export function Header() {
   const router = useRouter();
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const { cartItems } = useCart();
 
   const handleSignOut = async () => {
     try {
@@ -131,9 +134,14 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" asChild>
+          <Button variant="ghost" size="icon" className="relative" asChild>
             <Link href="/checkout">
               <ShoppingCart />
+              {cartItems.length > 0 && (
+                <Badge variant="destructive" className="absolute -top-2 -right-2 h-6 w-6 flex items-center justify-center rounded-full p-0">
+                  {cartItems.length}
+                </Badge>
+              )}
               <span className="sr-only">Cart</span>
             </Link>
           </Button>

@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/AuthContext';
+import { CartProvider } from '@/context/CartContext';
 
 export const metadata: Metadata = {
   title: 'UrbanEos AI',
@@ -25,10 +26,12 @@ export default function RootLayout({
       </head>
       <body className={cn('font-body antialiased flex flex-col min-h-screen')}>
         <AuthProvider>
-          <Header />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-          <Toaster />
+          <CartProvider>
+            <Header />
+            <main className="flex-grow">{children}</main>
+            <Footer />
+            <Toaster />
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

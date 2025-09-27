@@ -1,7 +1,5 @@
-
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,25 +9,16 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { products } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { Product } from '@/lib/types';
-
+import { useCart } from '@/context/CartContext';
 
 export default function CheckoutPage() {
-  // The products from data don't have an id, so we'll add a temporary one for the key
-  const initialCart: Product[] = products.slice(0, 2).map((p, i) => ({...p, id: `cart-item-${i}`}));
-  const [cartItems, setCartItems] = useState(initialCart);
+  const { cartItems, removeFromCart, cartTotal } = useCart();
 
-  const subtotal = cartItems.reduce((acc, item) => acc + item.price, 0);
-  const shipping = 5.0;
-  const total = subtotal + shipping;
-
-  const handleRemoveItem = (id: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.id !== id));
-  };
+  const shipping = cartItems.length > 0 ? 5.0 : 0;
+  const total = cartTotal + shipping;
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -38,7 +27,7 @@ export default function CheckoutPage() {
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Your Items</CardTitle>
+              <CardTitle>Your Items ({cartItems.length})</CardTitle>
             </CardHeader>
             <CardContent>
               {cartItems.length > 0 ? (
@@ -72,7 +61,7 @@ export default function CheckoutPage() {
                           <Button
                             variant="link"
                             className="text-xs text-destructive h-auto p-0"
-                            onClick={() => handleRemoveItem(item.id)}
+                            onClick={() => removeFromCart(item.id)}
                           >
                             Remove
                           </Button>
@@ -98,7 +87,7 @@ export default function CheckoutPage() {
             <CardContent className="space-y-4">
               <div className="flex justify-between">
                 <p className="text-muted-foreground">Subtotal</p>
-                <p className="font-semibold">${subtotal.toFixed(2)}</p>
+                <p className="font-semibold">${cartTotal.toFixed(2)}</p>
               </div>
               <div className="flex justify-between">
                 <p className="text-muted-foreground">Shipping</p>
