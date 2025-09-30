@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useActionState, useEffect, useRef } from 'react';
@@ -30,7 +29,6 @@ import {
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { categories } from '@/lib/data';
 import { useAuth } from '@/context/AuthContext';
-
 
 const formSchema = z.object({
   name: z.string().min(5, 'Product name must be at least 5 characters.'),
@@ -86,7 +84,7 @@ export default function CreateProductForm() {
       });
       form.reset();
       formRef.current?.reset();
-       form.reset(form.formState.defaultValues);
+      form.reset(form.formState.defaultValues);
     } else if (state.message && state.errors) {
       toast({
         variant: 'destructive',
@@ -183,7 +181,7 @@ export default function CreateProductForm() {
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a placeholder image" />
-                  </Trigger>
+                  </SelectTrigger>
                 </FormControl>
                 <SelectContent>
                   {PlaceHolderImages.map((img) => (
